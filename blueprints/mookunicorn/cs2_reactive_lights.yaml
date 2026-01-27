@@ -1,163 +1,71 @@
 blueprint:
-  name: CS2 Reactive Lights (avec ON/OFF par effet)
+  name: CS2 Reactive Lights (UI compacte)
   description: >
-    Réagit aux événements CS2 et applique des effets lumineux avec sauvegarde,
-    restauration et contrôle ON/OFF individuel pour chaque fonctionnalité.
+    Version compacte avec ON/OFF sur la même ligne que les sélecteurs de capteurs.
   domain: automation
+
   input:
+
     lamps:
-      name: Lampes à contrôler
+      name: Lampe(s)
       selector:
         target:
           entity:
             domain: light
 
     # ─────────────── Flashbang ───────────────
-    enable_flashbang:
-      name: Activer l'effet Flashbang
-      default: true
-      selector:
-        boolean: {}
+    flash:
+      name: "Flashbang"
+      description: "Activer et sélectionner le capteur Flashbang"
+      collapsed: true
+      input:
+        enable_flashbang:
+          name: Activer Flashbang
+          selector:
+            boolean: {}
+          default: true
 
-    flashbang_sensor:
-      name: Capteur Flashé
-      default: ""
-      selector:
-        entity:
-          domain: sensor
+        flashbang_sensor:
+          name: Capteur Flashbang
+          selector:
+            entity:
+              domain: sensor
+          default: ""
 
-    # ─────────────── HP Bas ───────────────
-    enable_low_hp:
-      name: Activer l'effet Low HP
-      default: true
-      selector:
-        boolean: {}
+    # ─────────────── Low HP ───────────────
+    lowhp:
+      name: "Low HP"
+      description: "Activer et sélectionner le capteur HP"
+      collapsed: true
+      input:
+        enable_low_hp:
+          name: Activer Low HP
+          selector:
+            boolean: {}
+          default: true
 
-    low_hp_sensor:
-      name: Capteur HP
-      default: ""
-      selector:
-        entity:
-          domain: sensor
+        low_hp_sensor:
+          name: Capteur HP
+          selector:
+            entity:
+              domain: sensor
+          default: ""
 
     # ─────────────── Bombe ───────────────
-    enable_bomb:
-      name: Activer l'effet Bombe plantée
-      default: true
-      selector:
-        boolean: {}
+    bomb:
+      name: "Bombe plantée"
+      description: "Activer et sélectionner le capteur Bombe"
+      collapsed: true
+      input:
+        enable_bomb:
+          name: Activer Bombe
+          selector:
+            boolean: {}
+          default: true
 
-    bomb_sensor:
-      name: Capteur Bombe
-      default: ""
-      selector:
-        entity:
-          domain: sensor
-
-mode: restart
-
-# Scene dynamique (pas créée dans HA)
-variables:
-  backup_scene: "scene.cs2_backup_{{ this.entity_id | replace(':', '_') }}"
-
-trigger:
-  # Flashbang
-  - platform: state
-    entity_id: !input flashbang_sensor
-    to: "true"
-    id: flashbang
-
-  # Low HP
-  - platform: numeric_state
-    entity_id: !input low_hp_sensor
-    below: 30
-    id: hp_low
-
-  - platform: numeric_state
-    entity_id: !input low_hp_sensor
-    above: 30
-    id: hp_restore
-
-  # Bombe
-  - platform: state
-    entity_id: !input bomb_sensor
-    to: "planted"
-    id: bomb_planted
-
-  - platform: state
-    entity_id: !input bomb_sensor
-    to: "none"
-    id: bomb_clear
-
-action:
-  # Sauvegarde avant effet
-  - service: scene.create
-    data:
-      scene_id: "{{ backup_scene.split('scene.')[1] }}"
-      snapshot_entities: !input lamps
-
-  - choose:
-      # ─────────────── FLASHBANG ───────────────
-      - conditions:
-          - condition: trigger
-            id: flashbang
-          - condition: template
-            value_template: "{{ (inputs.enable_flashbang | default(true)) }}"
-        sequence:
-          - service: light.turn_on
-            target: !input lamps
-            data:
-              brightness: 255
-              color_temp: 153
-          - delay: "00:00:01.5"
-          - service: scene.turn_on
-            target:
-              entity_id: "{{ backup_scene }}"
-
-      # ─────────────── HP BAS ───────────────
-      - conditions:
-          - condition: trigger
-            id: hp_low
-          - condition: template
-            value_template: "{{ (inputs.enable_low_hp | default(true)) }}"
-        sequence:
-          - service: light.turn_on
-            target: !input lamps
-            data:
-              rgb_color: [255, 0, 0]
-              brightness: 200
-              effect: pulse
-
-      - conditions:
-          - condition: trigger
-            id: hp_restore
-          - condition: template
-            value_template: "{{ (inputs.enable_low_hp | default(true)) }}"
-        sequence:
-          - service: scene.turn_on
-            target:
-              entity_id: "{{ backup_scene }}"
-
-      # ─────────────── BOMBE ───────────────
-      - conditions:
-          - condition: trigger
-            id: bomb_planted
-          - condition: template
-            value_template: "{{ (inputs.enable_bomb | default(true)) }}"
-        sequence:
-          - service: light.turn_on
-            target: !input lamps
-            data:
-              rgb_color: [255, 120, 0]
-              brightness: 255
-              effect: pulse
-
-      - conditions:
-          - condition: trigger
-            id: bomb_clear
-          - condition: template
-            value_template: "{{ (inputs.enable_bomb | default(true)) }}"
-        sequence:
-          - service: scene.turn_on
-            target:
-              entity_id: "{{ backup_scene }}"
+        bomb_sensor:
+          name: Capteur Bombe
+          selector:
+            entity:
+              domain: sensor
+          default: ""
