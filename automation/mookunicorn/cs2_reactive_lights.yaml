@@ -1,106 +1,111 @@
-#V1
+#V2
 blueprint:
   name: CS2 Lampe Réactive
   description: Contrôle une lampe RGB en fonction des événements du jeu CS2 via CS2MQTT
   domain: automation
   input:
     light_entity:
-      name: Lampe à contrôler
+      name: 💡 Lampe à contrôler
       description: La lampe RGB qui réagira aux événements CS2
       selector:
         entity:
           domain: light
     
+    # ===== CONFIGURATION ÉQUIPES =====
+    enable_team_color:
+      name: "⚔️ ÉQUIPES - Activer les couleurs d'équipe"
+      description: Active l'affichage de la couleur d'équipe pendant la manche
+      default: true
+      selector:
+        boolean:
+    
     current_team:
-      name: Sensor - Équipe actuelle
+      name: "⚔️ ÉQUIPES - Sensor équipe actuelle"
       description: Sensor indiquant l'équipe actuelle (T ou CT)
       selector:
         entity:
           domain: sensor
     
-    flashed_sensor:
-      name: Sensor - Flash
-      description: Sensor binaire indiquant si le joueur est flashé
-      selector:
-        entity:
-          domain: binary_sensor
-    
-    smoked_sensor:
-      name: Sensor - Smoke
-      description: Sensor indiquant le niveau de smoke (0-100%)
-      selector:
-        entity:
-          domain: sensor
-    
-    burning_sensor:
-      name: Sensor - Burning
-      description: Sensor indiquant si le joueur brûle (0-100%)
-      selector:
-        entity:
-          domain: sensor
-    
-    bomb_sensor:
-      name: Sensor - Bombe
-      description: Sensor indiquant l'état de la bombe (inactive/planted/exploded/defused)
-      selector:
-        entity:
-          domain: sensor
-    
     round_phase:
-      name: Sensor - Phase de round
+      name: "⚔️ ÉQUIPES - Sensor phase de round"
       description: Sensor indiquant la phase du round (Over/Live/Freezetime)
       selector:
         entity:
           domain: sensor
     
     color_t:
-      name: Couleur équipe T
+      name: "⚔️ ÉQUIPES - Couleur équipe T"
       description: Couleur pour l'équipe Terrorist
       default: [255, 180, 0]
       selector:
         color_rgb:
     
     color_ct:
-      name: Couleur équipe CT
+      name: "⚔️ ÉQUIPES - Couleur équipe CT"
       description: Couleur pour l'équipe Counter-Terrorist
       default: [0, 100, 255]
       selector:
         color_rgb:
     
-    enable_team_color:
-      name: Activer les couleurs d'équipe
-      description: Active l'affichage de la couleur d'équipe pendant la manche
-      default: true
-      selector:
-        boolean:
-    
+    # ===== FLASH =====
     enable_flash:
-      name: Activer l'effet Flash
+      name: "⚡ FLASH - Activer l'effet Flash"
       description: Active l'effet blanc quand le joueur est flashé
       default: true
       selector:
         boolean:
     
+    flashed_sensor:
+      name: "⚡ FLASH - Sensor Flash"
+      description: Sensor indiquant si le joueur est flashé (valeurs "True" ou "False" en texte)
+      selector:
+        entity:
+          domain: sensor
+    
+    # ===== SMOKE =====
     enable_smoke:
-      name: Activer l'effet Smoke
+      name: "💨 SMOKE - Activer l'effet Smoke"
       description: Active l'effet gris quand le joueur est dans la fumée
       default: true
       selector:
         boolean:
     
+    smoked_sensor:
+      name: "💨 SMOKE - Sensor Smoke"
+      description: Sensor indiquant le niveau de smoke (0-100%)
+      selector:
+        entity:
+          domain: sensor
+    
+    # ===== BURNING =====
     enable_burning:
-      name: Activer l'effet Burning
+      name: "🔥 BURNING - Activer l'effet Burning"
       description: Active l'effet de flamme quand le joueur brûle
       default: true
       selector:
         boolean:
     
+    burning_sensor:
+      name: "🔥 BURNING - Sensor Burning"
+      description: Sensor indiquant si le joueur brûle (0-100%)
+      selector:
+        entity:
+          domain: sensor
+    
+    # ===== BOMBE =====
     enable_bomb:
-      name: Activer les effets Bombe
+      name: "💣 BOMBE - Activer les effets Bombe"
       description: Active les effets de bombe (clignotement rouge/bleu fixe)
       default: true
       selector:
         boolean:
+    
+    bomb_sensor:
+      name: "💣 BOMBE - Sensor Bombe"
+      description: Sensor indiquant l'état de la bombe (inactive/planted/exploded/defused)
+      selector:
+        entity:
+          domain: sensor
 
 mode: restart
 max_exceeded: silent
@@ -143,8 +148,8 @@ action:
             value_template: "{{ enable_flash_effect }}"
           - condition: template
             value_template: >
-              {% set flash_state = states(flashed) | lower %}
-              {{ flash_state in ['on', 'true', 'yes'] }}
+              {% set flash_state = states(flashed) | string | lower %}
+              {{ flash_state == 'true' }}
         sequence:
           - service: light.turn_on
             target:
