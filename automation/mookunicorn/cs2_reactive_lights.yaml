@@ -1,0 +1,71 @@
+blueprint:
+  name: CS2 Reactive Lights (UI compacte)
+  description: >
+    Version compacte avec ON/OFF sur la même ligne que les sélecteurs de capteurs.
+  domain: automation
+
+  input:
+
+    lamps:
+      name: Lampe(s)
+      selector:
+        target:
+          entity:
+            domain: light
+
+    # ─────────────── Flashbang ───────────────
+    flash:
+      name: "Flashbang"
+      description: "Activer et sélectionner le capteur Flashbang"
+      collapsed: true
+      input:
+        enable_flashbang:
+          name: Activer Flashbang
+          selector:
+            boolean: {}
+          default: true
+
+        flashbang_sensor:
+          name: Capteur Flashbang
+          selector:
+            entity:
+              domain: sensor
+          default: ""
+
+    # ─────────────── Low HP ───────────────
+    lowhp:
+      name: "Low HP"
+      description: "Activer et sélectionner le capteur HP"
+      collapsed: true
+      input:
+        enable_low_hp:
+          name: Activer Low HP
+          selector:
+            boolean: {}
+          default: true
+
+        low_hp_sensor:
+          name: Capteur HP
+          selector:
+            entity:
+              domain: sensor
+          default: ""
+
+    # ─────────────── Bombe ───────────────
+    bomb:
+      name: "Bombe plantée"
+      description: "Activer et sélectionner le capteur Bombe"
+      collapsed: true
+      input:
+        enable_bomb:
+          name: Activer Bombe
+          selector:
+            boolean: {}
+          default: true
+
+        bomb_sensor:
+          name: Capteur Bombe
+          selector:
+            entity:
+              domain: sensor
+          default: ""
