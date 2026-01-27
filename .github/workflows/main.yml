@@ -1,0 +1,19 @@
+name: Sync Blueprint to Gist
+
+on:
+  push:
+    paths:
+      - "blueprints/mookunicorn/cs2_reactive_lights.yaml"
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Update Gist
+        uses: exuanbo/actions-update-gist@v1
+        with:
+          gist_id: e0efb5a367a2624cd9a8f1a2793c90d7
+          token: ${{ secrets.GIST_TOKEN }}
+          file_path: blueprints/mookunicorn/cs2_reactive_lights.yaml
