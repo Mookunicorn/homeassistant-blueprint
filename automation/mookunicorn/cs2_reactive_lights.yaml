@@ -1,298 +1,258 @@
 blueprint:
-  name: CS2 Reactive Lights
-  description: >
-    Contrôle des lumières en fonction des événements CS2 (Counter-Strike 2) via CS2MQTT.
-    Réagit aux flashbangs, HP bas et bombe plantée.
+  name: CS2 Lampe Réactive
+  description: Contrôle une lampe RGB en fonction des événements du jeu CS2 via CS2MQTT
   domain: automation
-
   input:
-    # ─────────────── Lampes ───────────────
-    target_lights:
-      name: Lampe(s)
-      description: Sélectionnez une ou plusieurs lampes à contrôler
+    light_entity:
+      name: Lampe à contrôler
+      description: La lampe RGB qui réagira aux événements CS2
       selector:
         entity:
-          multiple: true
           domain: light
-
-    # ─────────────── Flashbang ───────────────
-    enable_flashbang:
-      name: "🎇 Activer Flashbang"
-      description: Active la réaction aux flashbangs
-      default: true
-      selector:
-        boolean: {}
-
-    flashbang_sensor:
-      name: Capteur Flashbang
-      description: Entité sensor qui détecte les flashbangs
-      default: ""
+    
+    current_team:
+      name: Sensor - Équipe actuelle
+      description: Sensor indiquant l'équipe actuelle (T ou CT)
       selector:
         entity:
           domain: sensor
-
-    flashbang_color:
-      name: Couleur Flashbang
-      description: Couleur lors d'un flashbang (blanc recommandé)
-      default: [255, 255, 255]
+    
+    flashed_sensor:
+      name: Sensor - Flash
+      description: Sensor binaire indiquant si le joueur est flashé
       selector:
-        color_rgb: {}
-
-    flashbang_brightness:
-      name: Luminosité Flashbang
-      description: Luminosité lors d'un flashbang (0-255)
-      default: 255
-      selector:
-        number:
-          min: 0
-          max: 255
-          mode: slider
-
-    flashbang_duration:
-      name: Durée Flashbang (secondes)
-      description: Durée de l'effet flashbang
-      default: 2
-      selector:
-        number:
-          min: 0.5
-          max: 10
-          step: 0.5
-          mode: slider
-
-    # ─────────────── Low HP ───────────────
-    enable_low_hp:
-      name: "❤️ Activer Low HP"
-      description: Active la réaction aux HP bas
-      default: true
-      selector:
-        boolean: {}
-
-    low_hp_sensor:
-      name: Capteur HP
-      description: Entité sensor qui contient la valeur des HP
-      default: ""
+        entity:
+          domain: binary_sensor
+    
+    smoked_sensor:
+      name: Sensor - Smoke
+      description: Sensor indiquant le niveau de smoke (0-100%)
       selector:
         entity:
           domain: sensor
-
-    low_hp_threshold:
-      name: Seuil HP
-      description: Seuil en dessous duquel l'effet s'active
-      default: 30
+    
+    burning_sensor:
+      name: Sensor - Burning
+      description: Sensor indiquant si le joueur brûle (0-100%)
       selector:
-        number:
-          min: 1
-          max: 100
-          mode: slider
-
-    low_hp_color:
-      name: Couleur Low HP
-      description: Couleur lors de HP bas (rouge recommandé)
-      default: [255, 0, 0]
-      selector:
-        color_rgb: {}
-
-    low_hp_brightness:
-      name: Luminosité Low HP
-      description: Luminosité lors de HP bas (0-255)
-      default: 200
-      selector:
-        number:
-          min: 0
-          max: 255
-          mode: slider
-
-    # ─────────────── Bombe ───────────────
-    enable_bomb:
-      name: "💣 Activer Bombe plantée"
-      description: Active la réaction à la bombe plantée
-      default: true
-      selector:
-        boolean: {}
-
+        entity:
+          domain: sensor
+    
     bomb_sensor:
-      name: Capteur Bombe
-      description: Entité sensor qui détecte la bombe plantée
-      default: ""
+      name: Sensor - Bombe
+      description: Sensor indiquant l'état de la bombe (inactive/planted/exploded/defused)
       selector:
         entity:
           domain: sensor
-
-    bomb_color:
-      name: Couleur Bombe
-      description: Couleur lors de bombe plantée (orange/rouge recommandé)
-      default: [255, 100, 0]
+    
+    round_phase:
+      name: Sensor - Phase de round
+      description: Sensor indiquant la phase du round (Over/Live/Freezetime)
       selector:
-        color_rgb: {}
-
-    bomb_brightness:
-      name: Luminosité Bombe
-      description: Luminosité lors de bombe plantée (0-255)
-      default: 255
+        entity:
+          domain: sensor
+    
+    color_t:
+      name: Couleur équipe T
+      description: Couleur pour l'équipe Terrorist
+      default: [255, 180, 0]
       selector:
-        number:
-          min: 0
-          max: 255
-          mode: slider
-
-    bomb_effect:
-      name: Effet Bombe
-      description: Type d'effet pour la bombe
-      default: "pulse"
+        color_rgb:
+    
+    color_ct:
+      name: Couleur équipe CT
+      description: Couleur pour l'équipe Counter-Terrorist
+      default: [0, 100, 255]
       selector:
-        select:
-          options:
-            - label: "Pulsation"
-              value: "pulse"
-            - label: "Clignotement"
-              value: "blink"
-            - label: "Fixe"
-              value: "static"
-
-# ═══════════════════════════════════════════════════════════
-# TRIGGERS - Détection des événements
-# ═══════════════════════════════════════════════════════════
-trigger:
-  # Flashbang
-  - platform: state
-    entity_id: !input flashbang_sensor
-    to: "on"
-    id: flashbang_trigger
-    enabled: !input enable_flashbang
-
-  # Low HP
-  - platform: numeric_state
-    entity_id: !input low_hp_sensor
-    below: !input low_hp_threshold
-    id: low_hp_trigger
-    enabled: !input enable_low_hp
-
-  # Bombe plantée
-  - platform: state
-    entity_id: !input bomb_sensor
-    to: "planted"
-    id: bomb_trigger
-    enabled: !input enable_bomb
-
-# ═══════════════════════════════════════════════════════════
-# CONDITIONS - Validation
-# ═══════════════════════════════════════════════════════════
-condition: []
-
-# ═══════════════════════════════════════════════════════════
-# ACTIONS - Effets lumineux
-# ═══════════════════════════════════════════════════════════
-action:
-  - choose:
-      # ───────── FLASHBANG ─────────
-      - conditions:
-          - condition: trigger
-            id: flashbang_trigger
-        sequence:
-          - service: light.turn_on
-            target:
-              entity_id: !input target_lights
-            data:
-              rgb_color: !input flashbang_color
-              brightness: !input flashbang_brightness
-              transition: 0
-          - delay:
-              seconds: !input flashbang_duration
-          - service: light.turn_off
-            target:
-              entity_id: !input target_lights
-            data:
-              transition: 1
-
-      # ───────── LOW HP ─────────
-      - conditions:
-          - condition: trigger
-            id: low_hp_trigger
-        sequence:
-          - service: light.turn_on
-            target:
-              entity_id: !input target_lights
-            data:
-              rgb_color: !input low_hp_color
-              brightness: !input low_hp_brightness
-              effect: "pulse"
-
-      # ───────── BOMBE PLANTÉE ─────────
-      - conditions:
-          - condition: trigger
-            id: bomb_trigger
-        sequence:
-          # Déclaration des variables
-          - variables:
-              bomb_effect: !input bomb_effect
-              bomb_brightness: !input bomb_brightness
-              bomb_color: !input bomb_color
-              bomb_sensor: !input bomb_sensor
-          
-          - choose:
-              # Effet pulsation
-              - conditions:
-                  - condition: template
-                    value_template: "{{ bomb_effect == 'pulse' }}"
-                sequence:
-                  - repeat:
-                      while:
-                        - condition: state
-                          entity_id: !input bomb_sensor
-                          state: "planted"
-                      sequence:
-                        - service: light.turn_on
-                          target:
-                            entity_id: !input target_lights
-                          data:
-                            rgb_color: "{{ bomb_color }}"
-                            brightness: "{{ bomb_brightness }}"
-                            transition: 1
-                        - delay:
-                            milliseconds: 500
-                        - service: light.turn_on
-                          target:
-                            entity_id: !input target_lights
-                          data:
-                            rgb_color: "{{ bomb_color }}"
-                            brightness: "{{ (bomb_brightness | int / 2) | int }}"
-                            transition: 1
-                        - delay:
-                            milliseconds: 500
-
-              # Effet clignotement
-              - conditions:
-                  - condition: template
-                    value_template: "{{ bomb_effect == 'blink' }}"
-                sequence:
-                  - repeat:
-                      while:
-                        - condition: state
-                          entity_id: !input bomb_sensor
-                          state: "planted"
-                      sequence:
-                        - service: light.turn_on
-                          target:
-                            entity_id: !input target_lights
-                          data:
-                            rgb_color: "{{ bomb_color }}"
-                            brightness: "{{ bomb_brightness }}"
-                        - delay:
-                            milliseconds: 200
-                        - service: light.turn_off
-                          target:
-                            entity_id: !input target_lights
-                        - delay:
-                            milliseconds: 200
-
-            # Effet fixe par défaut
-            default:
-              - service: light.turn_on
-                target:
-                  entity_id: !input target_lights
-                data:
-                  rgb_color: "{{ bomb_color }}"
-                  brightness: "{{ bomb_brightness }}"
+        color_rgb:
 
 mode: restart
 max_exceeded: silent
+
+variables:
+  light: !input light_entity
+  team: !input current_team
+  flashed: !input flashed_sensor
+  smoked: !input smoked_sensor
+  burning: !input burning_sensor
+  bomb: !input bomb_sensor
+  round_phase_sensor: !input round_phase
+  t_color: !input color_t
+  ct_color: !input color_ct
+
+trigger:
+  - platform: state
+    entity_id: !input current_team
+  - platform: state
+    entity_id: !input flashed_sensor
+  - platform: state
+    entity_id: !input smoked_sensor
+  - platform: state
+    entity_id: !input burning_sensor
+  - platform: state
+    entity_id: !input bomb_sensor
+  - platform: state
+    entity_id: !input round_phase
+
+action:
+  - choose:
+      # PRIORITÉ 1 : Flash (blanc)
+      - conditions:
+          - condition: state
+            entity_id: !input flashed_sensor
+            state: "on"
+        sequence:
+          - service: light.turn_on
+            target:
+              entity_id: !input light_entity
+            data:
+              brightness_pct: 100
+              rgb_color: [255, 255, 255]
+              transition: 0
+      
+      # PRIORITÉ 2 : Bombe plantée (clignotement rouge selon timer)
+      - conditions:
+          - condition: state
+            entity_id: !input bomb_sensor
+            state: "planted"
+        sequence:
+          - repeat:
+              while:
+                - condition: state
+                  entity_id: !input bomb_sensor
+                  state: "planted"
+              sequence:
+                - service: light.turn_on
+                  target:
+                    entity_id: !input light_entity
+                  data:
+                    brightness_pct: 100
+                    rgb_color: [255, 0, 0]
+                    transition: 0
+                - delay:
+                    milliseconds: 500
+                - service: light.turn_off
+                  target:
+                    entity_id: !input light_entity
+                  data:
+                    transition: 0
+                - delay:
+                    milliseconds: 500
+      
+      # PRIORITÉ 3 : Bombe diffusée (bleu fixe)
+      - conditions:
+          - condition: state
+            entity_id: !input bomb_sensor
+            state: "defused"
+        sequence:
+          - service: light.turn_on
+            target:
+              entity_id: !input light_entity
+            data:
+              brightness_pct: 100
+              rgb_color: [0, 150, 255]
+              transition: 1
+      
+      # PRIORITÉ 4 : Burning (effet flamme)
+      - conditions:
+          - condition: template
+            value_template: >
+              {{ states(burning) | int(0) > 0 }}
+        sequence:
+          - repeat:
+              while:
+                - condition: template
+                  value_template: >
+                    {{ states(burning) | int(0) > 0 }}
+              sequence:
+                # Flamme intense
+                - service: light.turn_on
+                  target:
+                    entity_id: !input light_entity
+                  data:
+                    brightness_pct: >
+                      {{ states(burning) | int(0) }}
+                    rgb_color: [255, 50, 0]
+                    transition: 0
+                - delay:
+                    milliseconds: 100
+                # Flamme moyenne
+                - service: light.turn_on
+                  target:
+                    entity_id: !input light_entity
+                  data:
+                    brightness_pct: >
+                      {{ (states(burning) | int(0) * 0.7) | int }}
+                    rgb_color: [255, 100, 0]
+                    transition: 0
+                - delay:
+                    milliseconds: 100
+                # Flamme basse
+                - service: light.turn_on
+                  target:
+                    entity_id: !input light_entity
+                  data:
+                    brightness_pct: >
+                      {{ (states(burning) | int(0) * 0.5) | int }}
+                    rgb_color: [255, 150, 0]
+                    transition: 0
+                - delay:
+                    milliseconds: 100
+      
+      # PRIORITÉ 5 : Smoke (gris)
+      - conditions:
+          - condition: template
+            value_template: >
+              {{ states(smoked) | int(0) > 0 }}
+        sequence:
+          - service: light.turn_on
+            target:
+              entity_id: !input light_entity
+            data:
+              brightness_pct: >
+                {{ states(smoked) | int(0) }}
+              rgb_color: [128, 128, 128]
+              transition: 0.5
+      
+      # PRIORITÉ 6 : Couleur d'équipe par défaut
+      - conditions:
+          - condition: template
+            value_template: >
+              {{ states(round_phase_sensor) in ['Live', 'Freezetime'] }}
+        sequence:
+          - choose:
+              # Équipe T
+              - conditions:
+                  - condition: state
+                    entity_id: !input current_team
+                    state: "T"
+                sequence:
+                  - service: light.turn_on
+                    target:
+                      entity_id: !input light_entity
+                    data:
+                      brightness_pct: 25
+                      rgb_color: !input color_t
+                      transition: 1
+              
+              # Équipe CT
+              - conditions:
+                  - condition: state
+                    entity_id: !input current_team
+                    state: "CT"
+                sequence:
+                  - service: light.turn_on
+                    target:
+                      entity_id: !input light_entity
+                    data:
+                      brightness_pct: 25
+                      rgb_color: !input color_ct
+                      transition: 1
+    
+    # Par défaut : éteindre la lampe si round terminé
+    default:
+      - service: light.turn_off
+        target:
+          entity_id: !input light_entity
+        data:
+          transition: 2
