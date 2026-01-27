@@ -1,3 +1,4 @@
+#TEST#
 blueprint:
   name: CS2 Reactive Lights (UI compacte)
   description: >
