@@ -11,153 +11,133 @@ blueprint:
           domain: light
     
     # ===== CONFIGURATION ÉQUIPES =====
-    team_config:
-      name: "⚔️ Configuration des équipes"
-      collapsed: true
-      input:
-        enable_team_color:
-          name: Activer les couleurs d'équipe
-          description: Active l'affichage de la couleur d'équipe pendant la manche
-          default: true
-          selector:
-            boolean:
-        
-        current_team:
-          name: Sensor - Équipe actuelle
-          description: Sensor indiquant l'équipe actuelle (T ou CT)
-          selector:
-            entity:
-              domain: sensor
-        
-        round_phase:
-          name: Sensor - Phase de round
-          description: Sensor indiquant la phase du round (Over/Live/Freezetime)
-          selector:
-            entity:
-              domain: sensor
-        
-        color_t:
-          name: Couleur équipe T (Terrorist)
-          description: Couleur pour l'équipe Terrorist
-          default: [255, 180, 0]
-          selector:
-            color_rgb:
-        
-        color_ct:
-          name: Couleur équipe CT (Counter-Terrorist)
-          description: Couleur pour l'équipe Counter-Terrorist
-          default: [0, 100, 255]
-          selector:
-            color_rgb:
+    enable_team_color:
+      name: "⚔️ ÉQUIPES - Activer les couleurs d'équipe"
+      description: Active l'affichage de la couleur d'équipe pendant la manche
+      default: true
+      selector:
+        boolean:
+    
+    current_team:
+      name: "⚔️ ÉQUIPES - Sensor équipe actuelle"
+      description: Sensor indiquant l'équipe actuelle (T ou CT)
+      selector:
+        entity:
+          domain: sensor
+    
+    round_phase:
+      name: "⚔️ ÉQUIPES - Sensor phase de round"
+      description: Sensor indiquant la phase du round (Over/Live/Freezetime)
+      selector:
+        entity:
+          domain: sensor
+    
+    color_t:
+      name: "⚔️ ÉQUIPES - Couleur équipe T"
+      description: Couleur pour l'équipe Terrorist
+      default: [255, 180, 0]
+      selector:
+        color_rgb:
+    
+    color_ct:
+      name: "⚔️ ÉQUIPES - Couleur équipe CT"
+      description: Couleur pour l'équipe Counter-Terrorist
+      default: [0, 100, 255]
+      selector:
+        color_rgb:
     
     # ===== FLASH =====
-    flash_config:
-      name: "⚡ Configuration Flash"
-      collapsed: true
-      input:
-        enable_flash:
-          name: Activer l'effet Flash
-          description: Active l'effet blanc quand le joueur est flashé
-          default: true
-          selector:
-            boolean:
-        
-        flashed_sensor:
-          name: Sensor - Flash
-          description: Sensor indiquant si le joueur est flashé (valeurs "True" ou "False" en texte)
-          selector:
-            entity:
-              domain: sensor
+    enable_flash:
+      name: "⚡ FLASH - Activer l'effet Flash"
+      description: Active l'effet blanc quand le joueur est flashé
+      default: true
+      selector:
+        boolean:
+    
+    flashed_sensor:
+      name: "⚡ FLASH - Sensor Flash"
+      description: Sensor indiquant si le joueur est flashé (valeurs "True" ou "False" en texte)
+      selector:
+        entity:
+          domain: sensor
     
     # ===== SMOKE =====
-    smoke_config:
-      name: "💨 Configuration Smoke"
-      collapsed: true
-      input:
-        enable_smoke:
-          name: Activer l'effet Smoke
-          description: Active l'effet gris quand le joueur est dans la fumée
-          default: true
-          selector:
-            boolean:
-        
-        smoked_sensor:
-          name: Sensor - Smoke
-          description: Sensor indiquant le niveau de smoke (0-100%)
-          selector:
-            entity:
-              domain: sensor
+    enable_smoke:
+      name: "💨 SMOKE - Activer l'effet Smoke"
+      description: Active l'effet gris quand le joueur est dans la fumée
+      default: true
+      selector:
+        boolean:
+    
+    smoked_sensor:
+      name: "💨 SMOKE - Sensor Smoke"
+      description: Sensor indiquant le niveau de smoke (0-100%)
+      selector:
+        entity:
+          domain: sensor
     
     # ===== BURNING =====
-    burning_config:
-      name: "🔥 Configuration Burning"
-      collapsed: true
-      input:
-        enable_burning:
-          name: Activer l'effet Burning
-          description: Active l'effet de flamme quand le joueur brûle
-          default: true
-          selector:
-            boolean:
-        
-        burning_sensor:
-          name: Sensor - Burning
-          description: Sensor indiquant si le joueur brûle (0-100%)
-          selector:
-            entity:
-              domain: sensor
+    enable_burning:
+      name: "🔥 BURNING - Activer l'effet Burning"
+      description: Active l'effet de flamme quand le joueur brûle
+      default: true
+      selector:
+        boolean:
+    
+    burning_sensor:
+      name: "🔥 BURNING - Sensor Burning"
+      description: Sensor indiquant si le joueur brûle (0-100%)
+      selector:
+        entity:
+          domain: sensor
     
     # ===== BOMBE =====
-    bomb_config:
-      name: "💣 Configuration Bombe"
-      collapsed: true
-      input:
-        enable_bomb:
-          name: Activer les effets Bombe
-          description: Active les effets de bombe (clignotement rouge/bleu fixe)
-          default: true
-          selector:
-            boolean:
-        
-        bomb_sensor:
-          name: Sensor - Bombe
-          description: Sensor indiquant l'état de la bombe (inactive/planted/exploded/defused)
-          selector:
-            entity:
-              domain: sensor
+    enable_bomb:
+      name: "💣 BOMBE - Activer les effets Bombe"
+      description: Active les effets de bombe (clignotement rouge/bleu fixe)
+      default: true
+      selector:
+        boolean:
+    
+    bomb_sensor:
+      name: "💣 BOMBE - Sensor Bombe"
+      description: Sensor indiquant l'état de la bombe (inactive/planted/exploded/defused)
+      selector:
+        entity:
+          domain: sensor
 
 mode: restart
 max_exceeded: silent
 
 variables:
   light: !input light_entity
-  team: !input team_config.current_team
-  flashed: !input flash_config.flashed_sensor
-  smoked: !input smoke_config.smoked_sensor
-  burning: !input burning_config.burning_sensor
-  bomb: !input bomb_config.bomb_sensor
-  round_phase_sensor: !input team_config.round_phase
-  t_color: !input team_config.color_t
-  ct_color: !input team_config.color_ct
-  enable_team: !input team_config.enable_team_color
-  enable_flash_effect: !input flash_config.enable_flash
-  enable_smoke_effect: !input smoke_config.enable_smoke
-  enable_burning_effect: !input burning_config.enable_burning
-  enable_bomb_effect: !input bomb_config.enable_bomb
+  team: !input current_team
+  flashed: !input flashed_sensor
+  smoked: !input smoked_sensor
+  burning: !input burning_sensor
+  bomb: !input bomb_sensor
+  round_phase_sensor: !input round_phase
+  t_color: !input color_t
+  ct_color: !input color_ct
+  enable_team: !input enable_team_color
+  enable_flash_effect: !input enable_flash
+  enable_smoke_effect: !input enable_smoke
+  enable_burning_effect: !input enable_burning
+  enable_bomb_effect: !input enable_bomb
 
 trigger:
   - platform: state
-    entity_id: !input team_config.current_team
+    entity_id: !input current_team
   - platform: state
-    entity_id: !input flash_config.flashed_sensor
+    entity_id: !input flashed_sensor
   - platform: state
-    entity_id: !input smoke_config.smoked_sensor
+    entity_id: !input smoked_sensor
   - platform: state
-    entity_id: !input burning_config.burning_sensor
+    entity_id: !input burning_sensor
   - platform: state
-    entity_id: !input bomb_config.bomb_sensor
+    entity_id: !input bomb_sensor
   - platform: state
-    entity_id: !input team_config.round_phase
+    entity_id: !input round_phase
 
 action:
   - choose:
@@ -183,13 +163,13 @@ action:
           - condition: template
             value_template: "{{ enable_bomb_effect }}"
           - condition: state
-            entity_id: !input bomb_config.bomb_sensor
+            entity_id: !input bomb_sensor
             state: "planted"
         sequence:
           - repeat:
               while:
                 - condition: state
-                  entity_id: !input bomb_config.bomb_sensor
+                  entity_id: !input bomb_sensor
                   state: "planted"
               sequence:
                 - service: light.turn_on
@@ -214,7 +194,7 @@ action:
           - condition: template
             value_template: "{{ enable_bomb_effect }}"
           - condition: state
-            entity_id: !input bomb_config.bomb_sensor
+            entity_id: !input bomb_sensor
             state: "defused"
         sequence:
           - service: light.turn_on
@@ -302,7 +282,7 @@ action:
               # Équipe T
               - conditions:
                   - condition: state
-                    entity_id: !input team_config.current_team
+                    entity_id: !input current_team
                     state: "T"
                 sequence:
                   - service: light.turn_on
@@ -310,13 +290,13 @@ action:
                       entity_id: !input light_entity
                     data:
                       brightness_pct: 25
-                      rgb_color: !input team_config.color_t
+                      rgb_color: !input color_t
                       transition: 1
               
               # Équipe CT
               - conditions:
                   - condition: state
-                    entity_id: !input team_config.current_team
+                    entity_id: !input current_team
                     state: "CT"
                 sequence:
                   - service: light.turn_on
@@ -324,7 +304,7 @@ action:
                       entity_id: !input light_entity
                     data:
                       brightness_pct: 25
-                      rgb_color: !input team_config.color_ct
+                      rgb_color: !input color_ct
                       transition: 1
     
     # Par défaut : éteindre la lampe si round terminé
