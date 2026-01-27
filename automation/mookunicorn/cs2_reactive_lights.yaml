@@ -65,6 +65,41 @@ blueprint:
       default: [0, 100, 255]
       selector:
         color_rgb:
+    
+    enable_team_color:
+      name: Activer les couleurs d'équipe
+      description: Active l'affichage de la couleur d'équipe pendant la manche
+      default: true
+      selector:
+        boolean:
+    
+    enable_flash:
+      name: Activer l'effet Flash
+      description: Active l'effet blanc quand le joueur est flashé
+      default: true
+      selector:
+        boolean:
+    
+    enable_smoke:
+      name: Activer l'effet Smoke
+      description: Active l'effet gris quand le joueur est dans la fumée
+      default: true
+      selector:
+        boolean:
+    
+    enable_burning:
+      name: Activer l'effet Burning
+      description: Active l'effet de flamme quand le joueur brûle
+      default: true
+      selector:
+        boolean:
+    
+    enable_bomb:
+      name: Activer les effets Bombe
+      description: Active les effets de bombe (clignotement rouge/bleu fixe)
+      default: true
+      selector:
+        boolean:
 
 mode: restart
 max_exceeded: silent
@@ -79,6 +114,11 @@ variables:
   round_phase_sensor: !input round_phase
   t_color: !input color_t
   ct_color: !input color_ct
+  enable_team: !input enable_team_color
+  enable_flash_effect: !input enable_flash
+  enable_smoke_effect: !input enable_smoke
+  enable_burning_effect: !input enable_burning
+  enable_bomb_effect: !input enable_bomb
 
 trigger:
   - platform: state
@@ -98,9 +138,12 @@ action:
   - choose:
       # PRIORITÉ 1 : Flash (blanc)
       - conditions:
-          - condition: state
-            entity_id: !input flashed_sensor
-            state: "on"
+          - condition: template
+            value_template: "{{ enable_flash_effect }}"
+          - condition: template
+            value_template: >
+              {% set flash_state = states(flashed) | lower %}
+              {{ flash_state in ['on', 'true', 'yes'] }}
         sequence:
           - service: light.turn_on
             target:
@@ -112,6 +155,8 @@ action:
       
       # PRIORITÉ 2 : Bombe plantée (clignotement rouge selon timer)
       - conditions:
+          - condition: template
+            value_template: "{{ enable_bomb_effect }}"
           - condition: state
             entity_id: !input bomb_sensor
             state: "planted"
@@ -141,6 +186,8 @@ action:
       
       # PRIORITÉ 3 : Bombe diffusée (bleu fixe)
       - conditions:
+          - condition: template
+            value_template: "{{ enable_bomb_effect }}"
           - condition: state
             entity_id: !input bomb_sensor
             state: "defused"
@@ -155,6 +202,8 @@ action:
       
       # PRIORITÉ 4 : Burning (effet flamme)
       - conditions:
+          - condition: template
+            value_template: "{{ enable_burning_effect }}"
           - condition: template
             value_template: >
               {{ states(burning) | int(0) > 0 }}
@@ -202,6 +251,8 @@ action:
       # PRIORITÉ 5 : Smoke (gris)
       - conditions:
           - condition: template
+            value_template: "{{ enable_smoke_effect }}"
+          - condition: template
             value_template: >
               {{ states(smoked) | int(0) > 0 }}
         sequence:
@@ -216,6 +267,8 @@ action:
       
       # PRIORITÉ 6 : Couleur d'équipe par défaut
       - conditions:
+          - condition: template
+            value_template: "{{ enable_team }}"
           - condition: template
             value_template: >
               {{ states(round_phase_sensor) in ['Live', 'Freezetime'] }}
