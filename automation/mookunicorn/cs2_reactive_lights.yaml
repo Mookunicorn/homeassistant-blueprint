@@ -165,13 +165,13 @@ action:
             value_template: "{{ enable_bomb_effect }}"
           - condition: state
             entity_id: !input bomb_sensor
-            state: "planted"
+            state: "Planted"
         sequence:
           - repeat:
               while:
                 - condition: state
                   entity_id: !input bomb_sensor
-                  state: "planted"
+                  state: "Planted"
               sequence:
                 - service: light.turn_on
                   target:
@@ -196,7 +196,7 @@ action:
             value_template: "{{ enable_bomb_effect }}"
           - condition: state
             entity_id: !input bomb_sensor
-            state: "defused"
+            state: "Defused"
         sequence:
           - service: light.turn_on
             target:
