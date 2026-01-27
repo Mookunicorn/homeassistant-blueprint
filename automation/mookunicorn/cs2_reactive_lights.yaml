@@ -222,6 +222,13 @@ action:
           - condition: trigger
             id: bomb_trigger
         sequence:
+          # Déclaration des variables
+          - variables:
+              bomb_effect: !input bomb_effect
+              bomb_brightness: !input bomb_brightness
+              bomb_color: !input bomb_color
+              bomb_sensor: !input bomb_sensor
+          
           - choose:
               # Effet pulsation
               - conditions:
@@ -238,8 +245,8 @@ action:
                           target:
                             entity_id: !input target_lights
                           data:
-                            rgb_color: !input bomb_color
-                            brightness: !input bomb_brightness
+                            rgb_color: "{{ bomb_color }}"
+                            brightness: "{{ bomb_brightness }}"
                             transition: 1
                         - delay:
                             milliseconds: 500
@@ -247,7 +254,8 @@ action:
                           target:
                             entity_id: !input target_lights
                           data:
-                            brightness: !input bomb_brightness | multiply(0.5)
+                            rgb_color: "{{ bomb_color }}"
+                            brightness: "{{ (bomb_brightness | int / 2) | int }}"
                             transition: 1
                         - delay:
                             milliseconds: 500
@@ -267,8 +275,8 @@ action:
                           target:
                             entity_id: !input target_lights
                           data:
-                            rgb_color: !input bomb_color
-                            brightness: !input bomb_brightness
+                            rgb_color: "{{ bomb_color }}"
+                            brightness: "{{ bomb_brightness }}"
                         - delay:
                             milliseconds: 200
                         - service: light.turn_off
@@ -283,8 +291,8 @@ action:
                 target:
                   entity_id: !input target_lights
                 data:
-                  rgb_color: !input bomb_color
-                  brightness: !input bomb_brightness
+                  rgb_color: "{{ bomb_color }}"
+                  brightness: "{{ bomb_brightness }}"
 
 mode: restart
 max_exceeded: silent
