@@ -1,3 +1,4 @@
+#V1
 blueprint:
   name: CS2 Lampe Réactive
   description: Contrôle une lampe RGB en fonction des événements du jeu CS2 via CS2MQTT
