@@ -1,184 +1,346 @@
 blueprint:
-  name: CS2 Reactive Lights
-  description: "Contrôle les lumières en fonction de l'état d'une partie de CS2 via Game State Integration."
+  name: CS2 Lampe Réactive
+  description: Contrôle une lampe RGB en fonction des événements du jeu CS2 via CS2MQTT
   domain: automation
   input:
-    light_target:
-      name: Lumières
-      description: Les lumières à contrôler.
+    light_entity:
+      name: 💡 Lampe à contrôler
+      description: La lampe RGB qui réagira aux événements CS2
       selector:
-        target:
-          entity:
-            domain: light
-
+        entity:
+          domain: light
+    
+    # ===== CONFIGURATION ÉQUIPES =====
     team_section:
-      name: Couleurs d'Équipes
-      icon: mdi:account-group
+      name: "⚔️ Configuration des équipes"
+      description: Paramètres pour l'affichage des couleurs d'équipe
+      icon: mdi:sword-cross
+      collapsed: true
       input:
         enable_team_color:
-          name: Activer les couleurs d'équipe
+          name: "Activer les couleurs d'équipe"
+          description: Active l'affichage de la couleur d'équipe pendant la manche
           default: true
           selector:
-            boolean: {}
+            boolean:
+        
         current_team:
-          name: Capteur d'équipe actuelle
+          name: "Sensor équipe actuelle"
+          description: Sensor indiquant l'équipe actuelle (T ou CT)
           selector:
             entity:
               domain: sensor
+        
         round_phase:
-          name: Capteur de phase du round
+          name: "Sensor phase de round"
+          description: Sensor indiquant la phase du round (Over/Live/Freezetime)
           selector:
             entity:
               domain: sensor
-        color_ct:
-          name: Couleur CT
-          default: [0, 150, 255]
-          selector:
-            color_rgb: {}
+        
         color_t:
-          name: Couleur Terroriste
-          default: [255, 100, 0]
+          name: "Couleur équipe T"
+          description: Couleur pour l'équipe Terrorist
+          default: [255, 180, 0]
           selector:
-            color_rgb: {}
-
-    bomb_section:
-      name: Bombe
-      icon: mdi:bomb
-      input:
-        enable_bomb:
-          name: Activer l'effet bombe
-          default: true
+            color_rgb:
+        
+        color_ct:
+          name: "Couleur équipe CT"
+          description: Couleur pour l'équipe Counter-Terrorist
+          default: [0, 100, 255]
           selector:
-            boolean: {}
-        bomb_sensor:
-          name: Capteur d'état de la bombe
-          selector:
-            entity:
-              domain: sensor
-
+            color_rgb:
+    
+    # ===== FLASH =====
     flash_section:
-      name: Aveuglement (Flash)
-      icon: mdi:eye-off
+      name: "⚡ Configuration Flash"
+      description: Paramètres pour l'effet de flash blanc
+      icon: mdi:flash
+      collapsed: true
       input:
         enable_flash:
-          name: Activer l'effet flash
+          name: "Activer l'effet Flash"
+          description: Active l'effet blanc quand le joueur est flashé
           default: true
           selector:
-            boolean: {}
+            boolean:
+        
         flashed_sensor:
-          name: Capteur d'aveuglement (alpha)
+          name: "Sensor Flash"
+          description: Sensor indiquant si le joueur est flashé (valeurs "True" ou "False" en texte)
           selector:
             entity:
               domain: sensor
-
+    
+    # ===== SMOKE =====
     smoke_section:
-      name: Fumée (Smoke)
-      icon: mdi:cloud
+      name: "💨 Configuration Smoke"
+      description: Paramètres pour l'effet de fumée grise
+      icon: mdi:smoke
+      collapsed: true
       input:
         enable_smoke:
-          name: Activer l'effet fumée
+          name: "Activer l'effet Smoke"
+          description: Active l'effet gris quand le joueur est dans la fumée
           default: true
           selector:
-            boolean: {}
+            boolean:
+        
         smoked_sensor:
-          name: Capteur de fumée (alpha)
+          name: "Sensor Smoke"
+          description: Sensor indiquant le niveau de smoke (0-100%)
           selector:
             entity:
               domain: sensor
-
+    
+    # ===== BURNING =====
     burning_section:
-      name: Feu (Molotov/Incendiaire)
+      name: "🔥 Configuration Burning"
+      description: Paramètres pour l'effet de flamme
       icon: mdi:fire
+      collapsed: true
       input:
         enable_burning:
-          name: Activer l'effet feu
+          name: "Activer l'effet Burning"
+          description: Active l'effet de flamme quand le joueur brûle
           default: true
           selector:
-            boolean: {}
+            boolean:
+        
         burning_sensor:
-          name: Capteur de brûlure (alpha)
+          name: "Sensor Burning"
+          description: Sensor indiquant si le joueur brûle (0-100%)
+          selector:
+            entity:
+              domain: sensor
+    
+    # ===== BOMBE =====
+    bomb_section:
+      name: "💣 Configuration Bombe"
+      description: Paramètres pour les effets de bombe
+      icon: mdi:bomb
+      collapsed: true
+      input:
+        enable_bomb:
+          name: "Activer les effets Bombe"
+          description: Active les effets de bombe (clignotement rouge/bleu fixe)
+          default: true
+          selector:
+            boolean:
+        
+        bomb_sensor:
+          name: "Sensor Bombe"
+          description: Sensor indiquant l'état de la bombe (Inactive/Planted/Exploded/Defused)
           selector:
             entity:
               domain: sensor
 
 mode: restart
+max_exceeded: silent
+
+variables:
+  light: !input light_entity
+  team: !input team_section.current_team
+  flashed: !input flash_section.flashed_sensor
+  smoked: !input smoke_section.smoked_sensor
+  burning: !input burning_section.burning_sensor
+  bomb: !input bomb_section.bomb_sensor
+  round_phase_sensor: !input team_section.round_phase
+  t_color: !input team_section.color_t
+  ct_color: !input team_section.color_ct
+  enable_team: !input team_section.enable_team_color
+  enable_flash_effect: !input flash_section.enable_flash
+  enable_smoke_effect: !input smoke_section.enable_smoke
+  enable_burning_effect: !input burning_section.enable_burning
+  enable_bomb_effect: !input bomb_section.enable_bomb
 
 trigger:
   - platform: state
-    entity_id: !input current_team
+    entity_id: !input team_section.current_team
   - platform: state
-    entity_id: !input round_phase
+    entity_id: !input flash_section.flashed_sensor
   - platform: state
-    entity_id: !input bomb_sensor
+    entity_id: !input smoke_section.smoked_sensor
   - platform: state
-    entity_id: !input flashed_sensor
+    entity_id: !input burning_section.burning_sensor
   - platform: state
-    entity_id: !input smoked_sensor
+    entity_id: !input bomb_section.bomb_sensor
   - platform: state
-    entity_id: !input burning_sensor
+    entity_id: !input team_section.round_phase
 
 action:
   - choose:
-      # Effet Flash
+      # PRIORITÉ 1 : Flash (blanc)
       - conditions:
           - condition: template
-            value_template: "{{ states(flashed_sensor) | float(0) > 100 and (enable_flash == true) }}"
+            value_template: "{{ enable_flash_effect }}"
+          - condition: template
+            value_template: >
+              {% set flash_state = states(flashed) | string | lower %}
+              {{ flash_state == 'true' }}
         sequence:
           - service: light.turn_on
-            target: !input light_target
+            target:
+              entity_id: !input light_entity
             data:
               brightness_pct: 100
               rgb_color: [255, 255, 255]
-
-      # Effet Fumée
+              transition: 0
+      
+      # PRIORITÉ 2 : Bombe plantée (clignotement rouge selon timer)
       - conditions:
           - condition: template
-            value_template: "{{ states(smoked_sensor) | float(0) > 100 and (enable_smoke == true) }}"
+            value_template: "{{ enable_bomb_effect }}"
+          - condition: state
+            entity_id: !input bomb_section.bomb_sensor
+            state: "Planted"
         sequence:
-          - service: light.turn_on
-            target: !input light_target
-            data:
-              brightness_pct: 30
-              rgb_color: [200, 200, 200]
-
-      # Effet Feu
+          - repeat:
+              while:
+                - condition: state
+                  entity_id: !input bomb_section.bomb_sensor
+                  state: "Planted"
+              sequence:
+                - service: light.turn_on
+                  target:
+                    entity_id: !input light_entity
+                  data:
+                    brightness_pct: 100
+                    rgb_color: [255, 0, 0]
+                    transition: 0
+                - delay:
+                    milliseconds: 500
+                - service: light.turn_off
+                  target:
+                    entity_id: !input light_entity
+                  data:
+                    transition: 0
+                - delay:
+                    milliseconds: 500
+      
+      # PRIORITÉ 3 : Bombe diffusée (bleu fixe)
       - conditions:
           - condition: template
-            value_template: "{{ states(burning_sensor) | float(0) > 100 and (enable_burning == true) }}"
+            value_template: "{{ enable_bomb_effect }}"
+          - condition: state
+            entity_id: !input bomb_section.bomb_sensor
+            state: "Defused"
         sequence:
           - service: light.turn_on
-            target: !input light_target
+            target:
+              entity_id: !input light_entity
             data:
               brightness_pct: 100
-              rgb_color: [255, 50, 0]
-
-      # Couleur d'équipe par défaut
+              rgb_color: [0, 150, 255]
+              transition: 1
+      
+      # PRIORITÉ 4 : Burning (effet flamme)
       - conditions:
           - condition: template
-            value_template: "{{ enable_team_color == true }}"
+            value_template: "{{ enable_burning_effect }}"
+          - condition: template
+            value_template: >
+              {{ states(burning) | int(0) > 0 }}
+        sequence:
+          - repeat:
+              while:
+                - condition: template
+                  value_template: >
+                    {{ states(burning) | int(0) > 0 }}
+              sequence:
+                # Flamme intense
+                - service: light.turn_on
+                  target:
+                    entity_id: !input light_entity
+                  data:
+                    brightness_pct: >
+                      {{ states(burning) | int(0) }}
+                    rgb_color: [255, 50, 0]
+                    transition: 0
+                - delay:
+                    milliseconds: 100
+                # Flamme moyenne
+                - service: light.turn_on
+                  target:
+                    entity_id: !input light_entity
+                  data:
+                    brightness_pct: >
+                      {{ (states(burning) | int(0) * 0.7) | int }}
+                    rgb_color: [255, 100, 0]
+                    transition: 0
+                - delay:
+                    milliseconds: 100
+                # Flamme basse
+                - service: light.turn_on
+                  target:
+                    entity_id: !input light_entity
+                  data:
+                    brightness_pct: >
+                      {{ (states(burning) | int(0) * 0.5) | int }}
+                    rgb_color: [255, 150, 0]
+                    transition: 0
+                - delay:
+                    milliseconds: 100
+      
+      # PRIORITÉ 5 : Smoke (gris)
+      - conditions:
+          - condition: template
+            value_template: "{{ enable_smoke_effect }}"
+          - condition: template
+            value_template: >
+              {{ states(smoked) | int(0) > 0 }}
         sequence:
           - service: light.turn_on
-            target: !input light_target
+            target:
+              entity_id: !input light_entity
             data:
-              rgb_color: >
-                {% if states(current_team) == 'CT' %}
-                  {{ color_ct }}
-                {% else %}
-                  {{ color_t }}
-                {% endif %}
-              brightness_pct: 100
-
-    default: []
-
-variables:
-  # On mappe les inputs dans des variables pour les utiliser dans les templates
-  enable_team_color: !input enable_team_color
-  current_team: !input current_team
-  color_ct: !input color_ct
-  color_t: !input color_t
-  enable_flash: !input enable_flash
-  flashed_sensor: !input flashed_sensor
-  enable_smoke: !input enable_smoke
-  smoked_sensor: !input smoked_sensor
-  enable_burning: !input enable_burning
-  burning_sensor: !input burning_sensor
+              brightness_pct: >
+                {{ states(smoked) | int(0) }}
+              rgb_color: [128, 128, 128]
+              transition: 0.5
+      
+      # PRIORITÉ 6 : Couleur d'équipe par défaut
+      - conditions:
+          - condition: template
+            value_template: "{{ enable_team }}"
+          - condition: template
+            value_template: >
+              {{ states(round_phase_sensor) in ['Live', 'Freezetime'] }}
+        sequence:
+          - choose:
+              # Équipe T
+              - conditions:
+                  - condition: state
+                    entity_id: !input team_section.current_team
+                    state: "T"
+                sequence:
+                  - service: light.turn_on
+                    target:
+                      entity_id: !input light_entity
+                    data:
+                      brightness_pct: 25
+                      rgb_color: !input team_section.color_t
+                      transition: 1
+              
+              # Équipe CT
+              - conditions:
+                  - condition: state
+                    entity_id: !input team_section.current_team
+                    state: "CT"
+                sequence:
+                  - service: light.turn_on
+                    target:
+                      entity_id: !input light_entity
+                    data:
+                      brightness_pct: 25
+                      rgb_color: !input team_section.color_ct
+                      transition: 1
+    
+    # Par défaut : éteindre la lampe si round terminé
+    default:
+      - service: light.turn_off
+        target:
+          entity_id: !input light_entity
+        data:
+          transition: 2
