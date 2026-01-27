@@ -1,71 +1,290 @@
 blueprint:
-  name: CS2 Reactive Lights (UI compacte)
+  name: CS2 Reactive Lights
   description: >
-    Version compacte avec ON/OFF sur la même ligne que les sélecteurs de capteurs.
+    Contrôle des lumières en fonction des événements CS2 (Counter-Strike 2) via CS2MQTT.
+    Réagit aux flashbangs, HP bas et bombe plantée.
   domain: automation
 
   input:
-
-    lamps:
+    # ─────────────── Lampes ───────────────
+    target_lights:
       name: Lampe(s)
+      description: Sélectionnez une ou plusieurs lampes à contrôler
       selector:
-        target:
-          entity:
-            domain: light
+        entity:
+          multiple: true
+          domain: light
 
     # ─────────────── Flashbang ───────────────
-    flash:
-      name: "Flashbang"
-      description: "Activer et sélectionner le capteur Flashbang"
-      collapsed: true
-      input:
-        enable_flashbang:
-          name: Activer Flashbang
-          selector:
-            boolean: {}
-          default: true
+    enable_flashbang:
+      name: "🎇 Activer Flashbang"
+      description: Active la réaction aux flashbangs
+      default: true
+      selector:
+        boolean: {}
 
-        flashbang_sensor:
-          name: Capteur Flashbang
-          selector:
-            entity:
-              domain: sensor
-          default: ""
+    flashbang_sensor:
+      name: Capteur Flashbang
+      description: Entité sensor qui détecte les flashbangs
+      default: ""
+      selector:
+        entity:
+          domain: sensor
+
+    flashbang_color:
+      name: Couleur Flashbang
+      description: Couleur lors d'un flashbang (blanc recommandé)
+      default: [255, 255, 255]
+      selector:
+        color_rgb: {}
+
+    flashbang_brightness:
+      name: Luminosité Flashbang
+      description: Luminosité lors d'un flashbang (0-255)
+      default: 255
+      selector:
+        number:
+          min: 0
+          max: 255
+          mode: slider
+
+    flashbang_duration:
+      name: Durée Flashbang (secondes)
+      description: Durée de l'effet flashbang
+      default: 2
+      selector:
+        number:
+          min: 0.5
+          max: 10
+          step: 0.5
+          mode: slider
 
     # ─────────────── Low HP ───────────────
-    lowhp:
-      name: "Low HP"
-      description: "Activer et sélectionner le capteur HP"
-      collapsed: true
-      input:
-        enable_low_hp:
-          name: Activer Low HP
-          selector:
-            boolean: {}
-          default: true
+    enable_low_hp:
+      name: "❤️ Activer Low HP"
+      description: Active la réaction aux HP bas
+      default: true
+      selector:
+        boolean: {}
 
-        low_hp_sensor:
-          name: Capteur HP
-          selector:
-            entity:
-              domain: sensor
-          default: ""
+    low_hp_sensor:
+      name: Capteur HP
+      description: Entité sensor qui contient la valeur des HP
+      default: ""
+      selector:
+        entity:
+          domain: sensor
+
+    low_hp_threshold:
+      name: Seuil HP
+      description: Seuil en dessous duquel l'effet s'active
+      default: 30
+      selector:
+        number:
+          min: 1
+          max: 100
+          mode: slider
+
+    low_hp_color:
+      name: Couleur Low HP
+      description: Couleur lors de HP bas (rouge recommandé)
+      default: [255, 0, 0]
+      selector:
+        color_rgb: {}
+
+    low_hp_brightness:
+      name: Luminosité Low HP
+      description: Luminosité lors de HP bas (0-255)
+      default: 200
+      selector:
+        number:
+          min: 0
+          max: 255
+          mode: slider
 
     # ─────────────── Bombe ───────────────
-    bomb:
-      name: "Bombe plantée"
-      description: "Activer et sélectionner le capteur Bombe"
-      collapsed: true
-      input:
-        enable_bomb:
-          name: Activer Bombe
-          selector:
-            boolean: {}
-          default: true
+    enable_bomb:
+      name: "💣 Activer Bombe plantée"
+      description: Active la réaction à la bombe plantée
+      default: true
+      selector:
+        boolean: {}
 
-        bomb_sensor:
-          name: Capteur Bombe
-          selector:
-            entity:
-              domain: sensor
-          default: ""
+    bomb_sensor:
+      name: Capteur Bombe
+      description: Entité sensor qui détecte la bombe plantée
+      default: ""
+      selector:
+        entity:
+          domain: sensor
+
+    bomb_color:
+      name: Couleur Bombe
+      description: Couleur lors de bombe plantée (orange/rouge recommandé)
+      default: [255, 100, 0]
+      selector:
+        color_rgb: {}
+
+    bomb_brightness:
+      name: Luminosité Bombe
+      description: Luminosité lors de bombe plantée (0-255)
+      default: 255
+      selector:
+        number:
+          min: 0
+          max: 255
+          mode: slider
+
+    bomb_effect:
+      name: Effet Bombe
+      description: Type d'effet pour la bombe
+      default: "pulse"
+      selector:
+        select:
+          options:
+            - label: "Pulsation"
+              value: "pulse"
+            - label: "Clignotement"
+              value: "blink"
+            - label: "Fixe"
+              value: "static"
+
+# ═══════════════════════════════════════════════════════════
+# TRIGGERS - Détection des événements
+# ═══════════════════════════════════════════════════════════
+trigger:
+  # Flashbang
+  - platform: state
+    entity_id: !input flashbang_sensor
+    to: "on"
+    id: flashbang_trigger
+    enabled: !input enable_flashbang
+
+  # Low HP
+  - platform: numeric_state
+    entity_id: !input low_hp_sensor
+    below: !input low_hp_threshold
+    id: low_hp_trigger
+    enabled: !input enable_low_hp
+
+  # Bombe plantée
+  - platform: state
+    entity_id: !input bomb_sensor
+    to: "planted"
+    id: bomb_trigger
+    enabled: !input enable_bomb
+
+# ═══════════════════════════════════════════════════════════
+# CONDITIONS - Validation
+# ═══════════════════════════════════════════════════════════
+condition: []
+
+# ═══════════════════════════════════════════════════════════
+# ACTIONS - Effets lumineux
+# ═══════════════════════════════════════════════════════════
+action:
+  - choose:
+      # ───────── FLASHBANG ─────────
+      - conditions:
+          - condition: trigger
+            id: flashbang_trigger
+        sequence:
+          - service: light.turn_on
+            target:
+              entity_id: !input target_lights
+            data:
+              rgb_color: !input flashbang_color
+              brightness: !input flashbang_brightness
+              transition: 0
+          - delay:
+              seconds: !input flashbang_duration
+          - service: light.turn_off
+            target:
+              entity_id: !input target_lights
+            data:
+              transition: 1
+
+      # ───────── LOW HP ─────────
+      - conditions:
+          - condition: trigger
+            id: low_hp_trigger
+        sequence:
+          - service: light.turn_on
+            target:
+              entity_id: !input target_lights
+            data:
+              rgb_color: !input low_hp_color
+              brightness: !input low_hp_brightness
+              effect: "pulse"
+
+      # ───────── BOMBE PLANTÉE ─────────
+      - conditions:
+          - condition: trigger
+            id: bomb_trigger
+        sequence:
+          - choose:
+              # Effet pulsation
+              - conditions:
+                  - condition: template
+                    value_template: "{{ bomb_effect == 'pulse' }}"
+                sequence:
+                  - repeat:
+                      while:
+                        - condition: state
+                          entity_id: !input bomb_sensor
+                          state: "planted"
+                      sequence:
+                        - service: light.turn_on
+                          target:
+                            entity_id: !input target_lights
+                          data:
+                            rgb_color: !input bomb_color
+                            brightness: !input bomb_brightness
+                            transition: 1
+                        - delay:
+                            milliseconds: 500
+                        - service: light.turn_on
+                          target:
+                            entity_id: !input target_lights
+                          data:
+                            brightness: !input bomb_brightness | multiply(0.5)
+                            transition: 1
+                        - delay:
+                            milliseconds: 500
+
+              # Effet clignotement
+              - conditions:
+                  - condition: template
+                    value_template: "{{ bomb_effect == 'blink' }}"
+                sequence:
+                  - repeat:
+                      while:
+                        - condition: state
+                          entity_id: !input bomb_sensor
+                          state: "planted"
+                      sequence:
+                        - service: light.turn_on
+                          target:
+                            entity_id: !input target_lights
+                          data:
+                            rgb_color: !input bomb_color
+                            brightness: !input bomb_brightness
+                        - delay:
+                            milliseconds: 200
+                        - service: light.turn_off
+                          target:
+                            entity_id: !input target_lights
+                        - delay:
+                            milliseconds: 200
+
+            # Effet fixe par défaut
+            default:
+              - service: light.turn_on
+                target:
+                  entity_id: !input target_lights
+                data:
+                  rgb_color: !input bomb_color
+                  brightness: !input bomb_brightness
+
+mode: restart
+max_exceeded: silent
