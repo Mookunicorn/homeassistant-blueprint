@@ -107,6 +107,7 @@ blueprint:
         flashed_sensor:
           name: "⚡ FLASH - Sensor Flash"
           description: Sensor indiquant si le joueur est flashé (valeurs "True" ou "False" en texte)
+          default: ""
           selector:
             entity:
               domain: sensor
@@ -144,6 +145,7 @@ blueprint:
         smoked_sensor:
           name: "💨 SMOKE - Sensor Smoke"
           description: Sensor indiquant le niveau de smoke (0-100%)
+          default: ""
           selector:
             entity:
               domain: sensor
@@ -171,6 +173,7 @@ blueprint:
         burning_sensor:
           name: "🔥 BURNING - Sensor Burning"
           description: Sensor indiquant si le joueur brûle (0-100%)
+          default: ""
           selector:
             entity:
               domain: sensor
@@ -212,6 +215,7 @@ blueprint:
         bomb_sensor:
           name: "💣 BOMBE - Sensor Bombe"
           description: Sensor indiquant l'état de la bombe (Inactive/Planted/Exploded/Defused)
+          default: ""
           selector:
             entity:
               domain: sensor
