@@ -36,7 +36,6 @@ blueprint:
     current_team:
       name: "⚔️ ÉQUIPES - Sensor équipe actuelle"
       description: Sensor indiquant l'équipe actuelle (T ou CT)
-      default: []
       selector:
         entity:
           domain: sensor
@@ -44,7 +43,6 @@ blueprint:
     round_phase:
       name: "⚔️ ÉQUIPES - Sensor phase de round"
       description: Sensor indiquant la phase du round (Over/Live/Freezetime)
-      default: []
       selector:
         entity:
           domain: sensor
@@ -94,7 +92,6 @@ blueprint:
     flashed_sensor:
       name: "⚡ FLASH - Sensor Flash"
       description: Sensor indiquant si le joueur est flashé (valeurs "True" ou "False" en texte)
-      default: []
       selector:
         entity:
           domain: sensor
@@ -127,7 +124,6 @@ blueprint:
     smoked_sensor:
       name: "💨 SMOKE - Sensor Smoke"
       description: Sensor indiquant le niveau de smoke (0-100%)
-      default: []
       selector:
         entity:
           domain: sensor
@@ -150,7 +146,6 @@ blueprint:
     burning_sensor:
       name: "🔥 BURNING - Sensor Burning"
       description: Sensor indiquant si le joueur brûle (0-100%)
-      default: []
       selector:
         entity:
           domain: sensor
@@ -187,7 +182,6 @@ blueprint:
     bomb_sensor:
       name: "💣 BOMBE - Sensor Bombe"
       description: Sensor indiquant l'état de la bombe (Inactive/Planted/Exploded/Defused)
-      default: []
       selector:
         entity:
           domain: sensor
@@ -318,8 +312,6 @@ action:
           - condition: template
             value_template: "{{ enable_flash_effect }}"
           - condition: template
-            value_template: "{{ flashed not in ['', 'unknown', 'unavailable', 'none'] }}"
-          - condition: template
             value_template: >
               {% set flash_state = states(flashed) | string | lower %}
               {{ flash_state == 'true' }}
@@ -340,7 +332,6 @@ action:
           - condition: template
             value_template: "{{ enable_bomb_effect }}"
           - condition: template
-            value_template: "{{ bomb not in ['', 'unknown', 'unavailable', 'none'] }}"
           - condition: state
             entity_id: !input bomb_sensor
             state: "Planted"
@@ -376,7 +367,6 @@ action:
           - condition: template
             value_template: "{{ enable_bomb_effect }}"
           - condition: template
-            value_template: "{{ bomb not in ['', 'unknown', 'unavailable', 'none'] }}"
           - condition: state
             entity_id: !input bomb_sensor
             state: "Defused"
@@ -397,7 +387,6 @@ action:
           - condition: template
             value_template: "{{ enable_burning_effect }}"
           - condition: template
-            value_template: "{{ burning not in ['', 'unknown', 'unavailable', 'none'] }}"
           - condition: template
             value_template: >
               {{ states(burning) | int(0) > 0 }}
@@ -450,7 +439,6 @@ action:
           - condition: template
             value_template: "{{ enable_smoke_effect }}"
           - condition: template
-            value_template: "{{ smoked not in ['', 'unknown', 'unavailable', 'none'] }}"
           - condition: template
             value_template: >
               {{ states(smoked) | int(0) > 0 }}
@@ -475,9 +463,7 @@ action:
           - condition: template
             value_template: "{{ enable_team }}"
           - condition: template
-            value_template: "{{ team not in ['', 'unknown', 'unavailable', 'none'] }}"
           - condition: template
-            value_template: "{{ round_phase_sensor not in ['', 'unknown', 'unavailable', 'none'] }}"
           - condition: template
             value_template: >
               {{ states(round_phase_sensor) in ['Live', 'Freezetime'] }}
