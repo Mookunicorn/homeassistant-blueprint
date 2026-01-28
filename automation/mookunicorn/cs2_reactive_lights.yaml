@@ -1,15 +1,24 @@
-#V2
+#V3
 blueprint:
   name: CS2 Lampe Réactive
-  description: Contrôle une lampe RGB en fonction des événements du jeu CS2 via CS2MQTT
+  description: Contrôle des lampes RGB en fonction des événements du jeu CS2 via CS2MQTT avec sauvegarde/restauration automatique
   domain: automation
   input:
-    light_entity:
-      name: 💡 Lampe à contrôler
-      description: La lampe RGB qui réagira aux événements CS2
+    # ===== CONFIGURATION GÉNÉRALE =====
+    light_entities:
+      name: 💡 Lampes à contrôler
+      description: Les lampes RGB qui réagiront aux événements CS2 (une ou plusieurs)
       selector:
         entity:
           domain: light
+          multiple: true
+    
+    connection_sensor:
+      name: 🔌 Sensor de connexion
+      description: Sensor indiquant l'état de connexion au jeu (Connecté/Déconnecté)
+      selector:
+        entity:
+          domain: sensor
     
     # ===== CONFIGURATION ÉQUIPES =====
     enable_team_color:
@@ -40,12 +49,32 @@ blueprint:
       selector:
         color_rgb:
     
+    brightness_t:
+      name: "⚔️ ÉQUIPES - Luminosité équipe T (%)"
+      description: Luminosité pour l'équipe Terrorist
+      default: 25
+      selector:
+        number:
+          min: 1
+          max: 100
+          unit_of_measurement: "%"
+    
     color_ct:
       name: "⚔️ ÉQUIPES - Couleur équipe CT"
       description: Couleur pour l'équipe Counter-Terrorist
       default: [0, 100, 255]
       selector:
         color_rgb:
+    
+    brightness_ct:
+      name: "⚔️ ÉQUIPES - Luminosité équipe CT (%)"
+      description: Luminosité pour l'équipe Counter-Terrorist
+      default: 25
+      selector:
+        number:
+          min: 1
+          max: 100
+          unit_of_measurement: "%"
     
     # ===== FLASH =====
     enable_flash:
@@ -62,6 +91,23 @@ blueprint:
         entity:
           domain: sensor
     
+    flash_color:
+      name: "⚡ FLASH - Couleur du flash"
+      description: Couleur de l'effet flash
+      default: [255, 255, 255]
+      selector:
+        color_rgb:
+    
+    flash_brightness:
+      name: "⚡ FLASH - Luminosité du flash (%)"
+      description: Luminosité de l'effet flash
+      default: 100
+      selector:
+        number:
+          min: 1
+          max: 100
+          unit_of_measurement: "%"
+    
     # ===== SMOKE =====
     enable_smoke:
       name: "💨 SMOKE - Activer l'effet Smoke"
@@ -76,6 +122,13 @@ blueprint:
       selector:
         entity:
           domain: sensor
+    
+    smoke_color:
+      name: "💨 SMOKE - Couleur de la fumée"
+      description: Couleur de l'effet smoke
+      default: [128, 128, 128]
+      selector:
+        color_rgb:
     
     # ===== BURNING =====
     enable_burning:
@@ -92,6 +145,27 @@ blueprint:
         entity:
           domain: sensor
     
+    flame_color_high:
+      name: "🔥 BURNING - Couleur flamme intense"
+      description: Couleur de la flamme intense
+      default: [255, 50, 0]
+      selector:
+        color_rgb:
+    
+    flame_color_medium:
+      name: "🔥 BURNING - Couleur flamme moyenne"
+      description: Couleur de la flamme moyenne
+      default: [255, 100, 0]
+      selector:
+        color_rgb:
+    
+    flame_color_low:
+      name: "🔥 BURNING - Couleur flamme basse"
+      description: Couleur de la flamme basse
+      default: [255, 150, 0]
+      selector:
+        color_rgb:
+    
     # ===== BOMBE =====
     enable_bomb:
       name: "💣 BOMBE - Activer les effets Bombe"
@@ -102,24 +176,77 @@ blueprint:
     
     bomb_sensor:
       name: "💣 BOMBE - Sensor Bombe"
-      description: Sensor indiquant l'état de la bombe (inactive/planted/exploded/defused)
+      description: Sensor indiquant l'état de la bombe (Inactive/Planted/Exploded/Defused)
       selector:
         entity:
           domain: sensor
+    
+    bomb_planted_color:
+      name: "💣 BOMBE - Couleur bombe plantée"
+      description: Couleur du clignotement quand la bombe est plantée
+      default: [255, 0, 0]
+      selector:
+        color_rgb:
+    
+    bomb_planted_brightness:
+      name: "💣 BOMBE - Luminosité bombe plantée (%)"
+      description: Luminosité du clignotement quand la bombe est plantée
+      default: 100
+      selector:
+        number:
+          min: 1
+          max: 100
+          unit_of_measurement: "%"
+    
+    bomb_defused_color:
+      name: "💣 BOMBE - Couleur bombe diffusée"
+      description: Couleur quand la bombe est diffusée
+      default: [0, 150, 255]
+      selector:
+        color_rgb:
+    
+    bomb_defused_brightness:
+      name: "💣 BOMBE - Luminosité bombe diffusée (%)"
+      description: Luminosité quand la bombe est diffusée
+      default: 100
+      selector:
+        number:
+          min: 1
+          max: 100
+          unit_of_measurement: "%"
 
 mode: restart
 max_exceeded: silent
 
 variables:
-  light: !input light_entity
+  lights: !input light_entities
+  connection: !input connection_sensor
   team: !input current_team
   flashed: !input flashed_sensor
   smoked: !input smoked_sensor
   burning: !input burning_sensor
   bomb: !input bomb_sensor
   round_phase_sensor: !input round_phase
+  # Couleurs et luminosités équipes
   t_color: !input color_t
+  t_brightness: !input brightness_t
   ct_color: !input color_ct
+  ct_brightness: !input brightness_ct
+  # Flash
+  flash_col: !input flash_color
+  flash_bright: !input flash_brightness
+  # Smoke
+  smoke_col: !input smoke_color
+  # Burning
+  flame_high: !input flame_color_high
+  flame_med: !input flame_color_medium
+  flame_low: !input flame_color_low
+  # Bombe
+  bomb_plant_col: !input bomb_planted_color
+  bomb_plant_bright: !input bomb_planted_brightness
+  bomb_defuse_col: !input bomb_defused_color
+  bomb_defuse_bright: !input bomb_defused_brightness
+  # Options d'activation
   enable_team: !input enable_team_color
   enable_flash_effect: !input enable_flash
   enable_smoke_effect: !input enable_smoke
@@ -127,6 +254,10 @@ variables:
   enable_bomb_effect: !input enable_bomb
 
 trigger:
+  # Trigger de connexion/déconnexion
+  - platform: state
+    entity_id: !input connection_sensor
+  # Triggers des événements de jeu
   - platform: state
     entity_id: !input current_team
   - platform: state
@@ -142,8 +273,37 @@ trigger:
 
 action:
   - choose:
+      # ===== SAUVEGARDE DE L'ÉTAT (Connexion au jeu) =====
+      - conditions:
+          - condition: state
+            entity_id: !input connection_sensor
+            state: "Connecté"
+        sequence:
+          # Sauvegarder l'état de chaque lampe dans une scene
+          - service: scene.create
+            data:
+              scene_id: cs2_lights_backup
+              snapshot_entities: !input light_entities
+      
+      # ===== RESTAURATION DE L'ÉTAT (Déconnexion du jeu) =====
+      - conditions:
+          - condition: state
+            entity_id: !input connection_sensor
+            state: "Déconnecté"
+        sequence:
+          # Restaurer l'état des lampes
+          - service: scene.turn_on
+            target:
+              entity_id: scene.cs2_lights_backup
+            data:
+              transition: 2
+      
+      # ===== EFFETS DE JEU (seulement si connecté) =====
       # PRIORITÉ 1 : Flash (blanc)
       - conditions:
+          - condition: state
+            entity_id: !input connection_sensor
+            state: "Connecté"
           - condition: template
             value_template: "{{ enable_flash_effect }}"
           - condition: template
@@ -153,14 +313,17 @@ action:
         sequence:
           - service: light.turn_on
             target:
-              entity_id: !input light_entity
+              entity_id: !input light_entities
             data:
-              brightness_pct: 100
-              rgb_color: [255, 255, 255]
+              brightness_pct: "{{ flash_bright }}"
+              rgb_color: "{{ flash_col }}"
               transition: 0
       
-      # PRIORITÉ 2 : Bombe plantée (clignotement rouge selon timer)
+      # PRIORITÉ 2 : Bombe plantée (clignotement rouge)
       - conditions:
+          - condition: state
+            entity_id: !input connection_sensor
+            state: "Connecté"
           - condition: template
             value_template: "{{ enable_bomb_effect }}"
           - condition: state
@@ -175,16 +338,16 @@ action:
               sequence:
                 - service: light.turn_on
                   target:
-                    entity_id: !input light_entity
+                    entity_id: !input light_entities
                   data:
-                    brightness_pct: 100
-                    rgb_color: [255, 0, 0]
+                    brightness_pct: "{{ bomb_plant_bright }}"
+                    rgb_color: "{{ bomb_plant_col }}"
                     transition: 0
                 - delay:
                     milliseconds: 500
                 - service: light.turn_off
                   target:
-                    entity_id: !input light_entity
+                    entity_id: !input light_entities
                   data:
                     transition: 0
                 - delay:
@@ -192,6 +355,9 @@ action:
       
       # PRIORITÉ 3 : Bombe diffusée (bleu fixe)
       - conditions:
+          - condition: state
+            entity_id: !input connection_sensor
+            state: "Connecté"
           - condition: template
             value_template: "{{ enable_bomb_effect }}"
           - condition: state
@@ -200,14 +366,17 @@ action:
         sequence:
           - service: light.turn_on
             target:
-              entity_id: !input light_entity
+              entity_id: !input light_entities
             data:
-              brightness_pct: 100
-              rgb_color: [0, 150, 255]
+              brightness_pct: "{{ bomb_defuse_bright }}"
+              rgb_color: "{{ bomb_defuse_col }}"
               transition: 1
       
       # PRIORITÉ 4 : Burning (effet flamme)
       - conditions:
+          - condition: state
+            entity_id: !input connection_sensor
+            state: "Connecté"
           - condition: template
             value_template: "{{ enable_burning_effect }}"
           - condition: template
@@ -223,39 +392,42 @@ action:
                 # Flamme intense
                 - service: light.turn_on
                   target:
-                    entity_id: !input light_entity
+                    entity_id: !input light_entities
                   data:
                     brightness_pct: >
                       {{ states(burning) | int(0) }}
-                    rgb_color: [255, 50, 0]
+                    rgb_color: "{{ flame_high }}"
                     transition: 0
                 - delay:
                     milliseconds: 100
                 # Flamme moyenne
                 - service: light.turn_on
                   target:
-                    entity_id: !input light_entity
+                    entity_id: !input light_entities
                   data:
                     brightness_pct: >
                       {{ (states(burning) | int(0) * 0.7) | int }}
-                    rgb_color: [255, 100, 0]
+                    rgb_color: "{{ flame_med }}"
                     transition: 0
                 - delay:
                     milliseconds: 100
                 # Flamme basse
                 - service: light.turn_on
                   target:
-                    entity_id: !input light_entity
+                    entity_id: !input light_entities
                   data:
                     brightness_pct: >
                       {{ (states(burning) | int(0) * 0.5) | int }}
-                    rgb_color: [255, 150, 0]
+                    rgb_color: "{{ flame_low }}"
                     transition: 0
                 - delay:
                     milliseconds: 100
       
       # PRIORITÉ 5 : Smoke (gris)
       - conditions:
+          - condition: state
+            entity_id: !input connection_sensor
+            state: "Connecté"
           - condition: template
             value_template: "{{ enable_smoke_effect }}"
           - condition: template
@@ -264,15 +436,18 @@ action:
         sequence:
           - service: light.turn_on
             target:
-              entity_id: !input light_entity
+              entity_id: !input light_entities
             data:
               brightness_pct: >
                 {{ states(smoked) | int(0) }}
-              rgb_color: [128, 128, 128]
+              rgb_color: "{{ smoke_col }}"
               transition: 0.5
       
       # PRIORITÉ 6 : Couleur d'équipe par défaut
       - conditions:
+          - condition: state
+            entity_id: !input connection_sensor
+            state: "Connecté"
           - condition: template
             value_template: "{{ enable_team }}"
           - condition: template
@@ -288,10 +463,10 @@ action:
                 sequence:
                   - service: light.turn_on
                     target:
-                      entity_id: !input light_entity
+                      entity_id: !input light_entities
                     data:
-                      brightness_pct: 25
-                      rgb_color: !input color_t
+                      brightness_pct: "{{ t_brightness }}"
+                      rgb_color: "{{ t_color }}"
                       transition: 1
               
               # Équipe CT
@@ -302,16 +477,8 @@ action:
                 sequence:
                   - service: light.turn_on
                     target:
-                      entity_id: !input light_entity
+                      entity_id: !input light_entities
                     data:
-                      brightness_pct: 25
-                      rgb_color: !input color_ct
+                      brightness_pct: "{{ ct_brightness }}"
+                      rgb_color: "{{ ct_color }}"
                       transition: 1
-    
-    # Par défaut : éteindre la lampe si round terminé
-    default:
-      - service: light.turn_off
-        target:
-          entity_id: !input light_entity
-        data:
-          transition: 2
