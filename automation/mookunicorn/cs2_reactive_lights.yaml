@@ -13,6 +13,7 @@ blueprint:
     general_section:
       collapsed: true
       name: "General"
+      icon: mdi:cog
       input:
         light_entities:
           name: 💡 Lampes à contrôler
@@ -33,6 +34,7 @@ blueprint:
     team_section:
       collapsed: true
       name: "Team"
+      icon: mdi:account-group
       input:
         enable_team_color:
           name: "⚔️ ÉQUIPES - Activer les couleurs d'équipe"
@@ -93,6 +95,7 @@ blueprint:
     flash_section:
       collapsed: true
       name: "Flash"
+      icon: mdi:flash
       input:
         enable_flash:
           name: "⚡ FLASH - Activer l'effet Flash"
@@ -129,6 +132,7 @@ blueprint:
     smoke_section:
       collapsed: true
       name: "Smoke"
+      icon: mdi:weather-fog
       input:
         enable_smoke:
           name: "💨 SMOKE - Activer l'effet Smoke"
@@ -155,6 +159,7 @@ blueprint:
     Flame_section:
       collapsed: true
       name: "Flame"
+      icon: mdi:fire-alert
       input:
         enable_burning:
           name: "🔥 BURNING - Activer l'effet Burning"
@@ -195,6 +200,7 @@ blueprint:
     Bomb_section:
       collapsed: true
       name: "Bombe"
+      icon: mdi:bomb
       input:
         enable_bomb:
           name: "💣 BOMBE - Activer les effets Bombe"
