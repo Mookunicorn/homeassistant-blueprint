@@ -82,36 +82,42 @@ blueprint:
           unit_of_measurement: "%"
     
     # ===== FLASH =====
-    enable_flash:
-      name: "⚡ FLASH - Activer l'effet Flash"
-      description: Active l'effet blanc quand le joueur est flashé
-      default: true
-      selector:
-        boolean:
-    
-    flashed_sensor:
-      name: "⚡ FLASH - Sensor Flash"
-      description: Sensor indiquant si le joueur est flashé (valeurs "True" ou "False" en texte)
-      selector:
-        entity:
-          domain: sensor
-    
-    flash_color:
-      name: "⚡ FLASH - Couleur du flash"
-      description: Couleur de l'effet flash
-      default: [255, 255, 255]
-      selector:
-        color_rgb:
-    
-    flash_brightness:
-      name: "⚡ FLASH - Luminosité du flash (%)"
-      description: Luminosité de l'effet flash
-      default: 100
-      selector:
-        number:
-          min: 1
-          max: 100
-          unit_of_measurement: "%"
+    flash_section:
+    #=============TEST================
+      collapsed: true
+      name: "Flash"
+      input:
+    #=============TEST================
+        enable_flash:
+          name: "⚡ FLASH - Activer l'effet Flash"
+          description: Active l'effet blanc quand le joueur est flashé
+          default: true
+          selector:
+            boolean:
+        
+        flashed_sensor:
+          name: "⚡ FLASH - Sensor Flash"
+          description: Sensor indiquant si le joueur est flashé (valeurs "True" ou "False" en texte)
+          selector:
+            entity:
+              domain: sensor
+        
+        flash_color:
+          name: "⚡ FLASH - Couleur du flash"
+          description: Couleur de l'effet flash
+          default: [255, 255, 255]
+          selector:
+            color_rgb:
+        
+        flash_brightness:
+          name: "⚡ FLASH - Luminosité du flash (%)"
+          description: Luminosité de l'effet flash
+          default: 100
+          selector:
+            number:
+              min: 1
+              max: 100
+              unit_of_measurement: "%"
     
     # ===== SMOKE =====
     enable_smoke:
