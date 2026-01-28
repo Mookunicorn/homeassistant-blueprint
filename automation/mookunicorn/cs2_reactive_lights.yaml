@@ -10,84 +10,90 @@ blueprint:
   domain: automation
   input:
     # ===== CONFIGURATION GÉNÉRALE =====
-    light_entities:
-      name: 💡 Lampes à contrôler
-      description: Les lampes RGB qui réagiront aux événements CS2 (une ou plusieurs)
-      selector:
-        entity:
-          domain: light
-          multiple: true
-    
-    connection_sensor:
-      name: 🔌 Sensor de connexion
-      description: Sensor binaire indiquant l'état de connexion au jeu (on=Connecté, off=Déconnecté)
-      selector:
-        entity:
-          domain: binary_sensor
+    general_section:
+      collapsed: true
+      name: "General"
+      input:
+        light_entities:
+          name: 💡 Lampes à contrôler
+          description: Les lampes RGB qui réagiront aux événements CS2 (une ou plusieurs)
+          selector:
+            entity:
+              domain: light
+              multiple: true
+        
+        connection_sensor:
+          name: 🔌 Sensor de connexion
+          description: Sensor binaire indiquant l'état de connexion au jeu (on=Connecté, off=Déconnecté)
+          selector:
+            entity:
+              domain: binary_sensor
     
     # ===== CONFIGURATION ÉQUIPES =====
-    enable_team_color:
-      name: "⚔️ ÉQUIPES - Activer les couleurs d'équipe"
-      description: Active l'affichage de la couleur d'équipe pendant la manche
-      default: true
-      selector:
-        boolean:
-    
-    current_team:
-      name: "⚔️ ÉQUIPES - Sensor équipe actuelle"
-      description: Sensor indiquant l'équipe actuelle (T ou CT)
-      selector:
-        entity:
-          domain: sensor
-    
-    round_phase:
-      name: "⚔️ ÉQUIPES - Sensor phase de round"
-      description: Sensor indiquant la phase du round (Over/Live/Freezetime)
-      selector:
-        entity:
-          domain: sensor
-    
-    color_t:
-      name: "⚔️ ÉQUIPES - Couleur équipe T"
-      description: Couleur pour l'équipe Terrorist
-      default: [255, 180, 0]
-      selector:
-        color_rgb:
-    
-    brightness_t:
-      name: "⚔️ ÉQUIPES - Luminosité équipe T (%)"
-      description: Luminosité pour l'équipe Terrorist
-      default: 25
-      selector:
-        number:
-          min: 1
-          max: 100
-          unit_of_measurement: "%"
-    
-    color_ct:
-      name: "⚔️ ÉQUIPES - Couleur équipe CT"
-      description: Couleur pour l'équipe Counter-Terrorist
-      default: [0, 100, 255]
-      selector:
-        color_rgb:
-    
-    brightness_ct:
-      name: "⚔️ ÉQUIPES - Luminosité équipe CT (%)"
-      description: Luminosité pour l'équipe Counter-Terrorist
-      default: 25
-      selector:
-        number:
-          min: 1
-          max: 100
-          unit_of_measurement: "%"
+    team_section:
+      collapsed: true
+      name: "Team"
+      input:
+        enable_team_color:
+          name: "⚔️ ÉQUIPES - Activer les couleurs d'équipe"
+          description: Active l'affichage de la couleur d'équipe pendant la manche
+          default: true
+          selector:
+            boolean:
+        
+        current_team:
+          name: "⚔️ ÉQUIPES - Sensor équipe actuelle"
+          description: Sensor indiquant l'équipe actuelle (T ou CT)
+          selector:
+            entity:
+              domain: sensor
+        
+        round_phase:
+          name: "⚔️ ÉQUIPES - Sensor phase de round"
+          description: Sensor indiquant la phase du round (Over/Live/Freezetime)
+          selector:
+            entity:
+              domain: sensor
+        
+        color_t:
+          name: "⚔️ ÉQUIPES - Couleur équipe T"
+          description: Couleur pour l'équipe Terrorist
+          default: [255, 180, 0]
+          selector:
+            color_rgb:
+        
+        brightness_t:
+          name: "⚔️ ÉQUIPES - Luminosité équipe T (%)"
+          description: Luminosité pour l'équipe Terrorist
+          default: 25
+          selector:
+            number:
+              min: 1
+              max: 100
+              unit_of_measurement: "%"
+        
+        color_ct:
+          name: "⚔️ ÉQUIPES - Couleur équipe CT"
+          description: Couleur pour l'équipe Counter-Terrorist
+          default: [0, 100, 255]
+          selector:
+            color_rgb:
+        
+        brightness_ct:
+          name: "⚔️ ÉQUIPES - Luminosité équipe CT (%)"
+          description: Luminosité pour l'équipe Counter-Terrorist
+          default: 25
+          selector:
+            number:
+              min: 1
+              max: 100
+              unit_of_measurement: "%"
     
     # ===== FLASH =====
     flash_section:
-    #=============TEST================
       collapsed: true
       name: "Flash"
       input:
-    #=============TEST================
         enable_flash:
           name: "⚡ FLASH - Activer l'effet Flash"
           description: Active l'effet blanc quand le joueur est flashé
@@ -120,111 +126,123 @@ blueprint:
               unit_of_measurement: "%"
     
     # ===== SMOKE =====
-    enable_smoke:
-      name: "💨 SMOKE - Activer l'effet Smoke"
-      description: Active l'effet gris quand le joueur est dans la fumée
-      default: true
-      selector:
-        boolean:
-    
-    smoked_sensor:
-      name: "💨 SMOKE - Sensor Smoke"
-      description: Sensor indiquant le niveau de smoke (0-100%)
-      selector:
-        entity:
-          domain: sensor
-    
-    smoke_color:
-      name: "💨 SMOKE - Couleur de base de la fumée"
-      description: Couleur de base (blanc par défaut, s'assombrit progressivement avec le niveau de smoke)
-      default: [255, 255, 255]
-      selector:
-        color_rgb:
+    smoke_section:
+      collapsed: true
+      name: "Smoke"
+      input:
+        enable_smoke:
+          name: "💨 SMOKE - Activer l'effet Smoke"
+          description: Active l'effet gris quand le joueur est dans la fumée
+          default: true
+          selector:
+            boolean:
+        
+        smoked_sensor:
+          name: "💨 SMOKE - Sensor Smoke"
+          description: Sensor indiquant le niveau de smoke (0-100%)
+          selector:
+            entity:
+              domain: sensor
+        
+        smoke_color:
+          name: "💨 SMOKE - Couleur de base de la fumée"
+          description: Couleur de base (blanc par défaut, s'assombrit progressivement avec le niveau de smoke)
+          default: [255, 255, 255]
+          selector:
+            color_rgb:
     
     # ===== BURNING =====
-    enable_burning:
-      name: "🔥 BURNING - Activer l'effet Burning"
-      description: Active l'effet de flamme quand le joueur brûle
-      default: true
-      selector:
-        boolean:
-    
-    burning_sensor:
-      name: "🔥 BURNING - Sensor Burning"
-      description: Sensor indiquant si le joueur brûle (0-100%)
-      selector:
-        entity:
-          domain: sensor
-    
-    flame_color_high:
-      name: "🔥 BURNING - Couleur flamme intense"
-      description: Couleur de la flamme intense
-      default: [255, 50, 0]
-      selector:
-        color_rgb:
-    
-    flame_color_medium:
-      name: "🔥 BURNING - Couleur flamme moyenne"
-      description: Couleur de la flamme moyenne
-      default: [255, 100, 0]
-      selector:
-        color_rgb:
-    
-    flame_color_low:
-      name: "🔥 BURNING - Couleur flamme basse"
-      description: Couleur de la flamme basse
-      default: [255, 150, 0]
-      selector:
-        color_rgb:
+    Flame_section:
+      collapsed: true
+      name: "Flame"
+      input:
+        enable_burning:
+          name: "🔥 BURNING - Activer l'effet Burning"
+          description: Active l'effet de flamme quand le joueur brûle
+          default: true
+          selector:
+            boolean:
+        
+        burning_sensor:
+          name: "🔥 BURNING - Sensor Burning"
+          description: Sensor indiquant si le joueur brûle (0-100%)
+          selector:
+            entity:
+              domain: sensor
+        
+        flame_color_high:
+          name: "🔥 BURNING - Couleur flamme intense"
+          description: Couleur de la flamme intense
+          default: [255, 50, 0]
+          selector:
+            color_rgb:
+        
+        flame_color_medium:
+          name: "🔥 BURNING - Couleur flamme moyenne"
+          description: Couleur de la flamme moyenne
+          default: [255, 100, 0]
+          selector:
+            color_rgb:
+        
+        flame_color_low:
+          name: "🔥 BURNING - Couleur flamme basse"
+          description: Couleur de la flamme basse
+          default: [255, 150, 0]
+          selector:
+            color_rgb:
     
     # ===== BOMBE =====
-    enable_bomb:
-      name: "💣 BOMBE - Activer les effets Bombe"
-      description: Active les effets de bombe (clignotement rouge/bleu fixe)
-      default: true
-      selector:
-        boolean:
-    
-    bomb_sensor:
-      name: "💣 BOMBE - Sensor Bombe"
-      description: Sensor indiquant l'état de la bombe (Inactive/Planted/Exploded/Defused)
-      selector:
-        entity:
-          domain: sensor
-    
-    bomb_planted_color:
-      name: "💣 BOMBE - Couleur bombe plantée"
-      description: Couleur du clignotement quand la bombe est plantée
-      default: [255, 0, 0]
-      selector:
-        color_rgb:
-    
-    bomb_planted_brightness:
-      name: "💣 BOMBE - Luminosité bombe plantée (%)"
-      description: Luminosité du clignotement quand la bombe est plantée
-      default: 100
-      selector:
-        number:
-          min: 1
-          max: 100
-          unit_of_measurement: "%"
-    
-    bomb_defused_color:
-      name: "💣 BOMBE - Couleur bombe diffusée"
-      description: Couleur quand la bombe est diffusée
-      default: [0, 150, 255]
-      selector:
-        color_rgb:
-    
-    bomb_defused_brightness:
-      name: "💣 BOMBE - Luminosité bombe diffusée (%)"
-      description: Luminosité quand la bombe est diffusée
-      default: 100
-      selector:
-        number:
-          min: 1
-          max: 100
-          unit_of_measurement: "%"
+    Bomb_section:
+      collapsed: true
+      name: "Bombe"
+      input:
+        enable_bomb:
+          name: "💣 BOMBE - Activer les effets Bombe"
+          description: Active les effets de bombe (clignotement rouge/bleu fixe)
+          default: true
+          selector:
+            boolean:
+        
+        bomb_sensor:
+          name: "💣 BOMBE - Sensor Bombe"
+          description: Sensor indiquant l'état de la bombe (Inactive/Planted/Exploded/Defused)
+          selector:
+            entity:
+              domain: sensor
+        
+        bomb_planted_color:
+          name: "💣 BOMBE - Couleur bombe plantée"
+          description: Couleur du clignotement quand la bombe est plantée
+          default: [255, 0, 0]
+          selector:
+            color_rgb:
+        
+        bomb_planted_brightness:
+          name: "💣 BOMBE - Luminosité bombe plantée (%)"
+          description: Luminosité du clignotement quand la bombe est plantée
+          default: 100
+          selector:
+            number:
+              min: 1
+              max: 100
+              unit_of_measurement: "%"
+        
+        bomb_defused_color:
+          name: "💣 BOMBE - Couleur bombe diffusée"
+          description: Couleur quand la bombe est diffusée
+          default: [0, 150, 255]
+          selector:
+            color_rgb:
+        
+        bomb_defused_brightness:
+          name: "💣 BOMBE - Luminosité bombe diffusée (%)"
+          description: Luminosité quand la bombe est diffusée
+          default: 100
+          selector:
+            number:
+              min: 1
+              max: 100
+              unit_of_measurement: "%"
 
 mode: restart
 max_exceeded: silent
