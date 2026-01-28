@@ -1,4 +1,9 @@
-#V3
+# CS2 Lampe Réactive - Blueprint pour Home Assistant
+# Version: 2.0.0
+# Date: 2025-01-28
+# Description: Contrôle intelligent de lampes RGB basé sur les événements CS2
+#              avec sauvegarde/restauration automatique de l'état
+
 blueprint:
   name: CS2 Lampe Réactive
   description: Contrôle des lampes RGB en fonction des événements du jeu CS2 via CS2MQTT avec sauvegarde/restauration automatique
@@ -15,10 +20,10 @@ blueprint:
     
     connection_sensor:
       name: 🔌 Sensor de connexion
-      description: Sensor indiquant l'état de connexion au jeu (Connecté/Déconnecté)
+      description: Sensor binaire indiquant l'état de connexion au jeu (on=Connecté, off=Déconnecté)
       selector:
         entity:
-          domain: sensor
+          domain: binary_sensor
     
     # ===== CONFIGURATION ÉQUIPES =====
     enable_team_color:
@@ -31,6 +36,7 @@ blueprint:
     current_team:
       name: "⚔️ ÉQUIPES - Sensor équipe actuelle"
       description: Sensor indiquant l'équipe actuelle (T ou CT)
+      default: []
       selector:
         entity:
           domain: sensor
@@ -38,6 +44,7 @@ blueprint:
     round_phase:
       name: "⚔️ ÉQUIPES - Sensor phase de round"
       description: Sensor indiquant la phase du round (Over/Live/Freezetime)
+      default: []
       selector:
         entity:
           domain: sensor
@@ -87,6 +94,7 @@ blueprint:
     flashed_sensor:
       name: "⚡ FLASH - Sensor Flash"
       description: Sensor indiquant si le joueur est flashé (valeurs "True" ou "False" en texte)
+      default: []
       selector:
         entity:
           domain: sensor
@@ -119,14 +127,15 @@ blueprint:
     smoked_sensor:
       name: "💨 SMOKE - Sensor Smoke"
       description: Sensor indiquant le niveau de smoke (0-100%)
+      default: []
       selector:
         entity:
           domain: sensor
     
     smoke_color:
-      name: "💨 SMOKE - Couleur de la fumée"
-      description: Couleur de l'effet smoke
-      default: [128, 128, 128]
+      name: "💨 SMOKE - Couleur de base de la fumée"
+      description: Couleur de base (blanc par défaut, s'assombrit progressivement avec le niveau de smoke)
+      default: [255, 255, 255]
       selector:
         color_rgb:
     
@@ -141,6 +150,7 @@ blueprint:
     burning_sensor:
       name: "🔥 BURNING - Sensor Burning"
       description: Sensor indiquant si le joueur brûle (0-100%)
+      default: []
       selector:
         entity:
           domain: sensor
@@ -177,6 +187,7 @@ blueprint:
     bomb_sensor:
       name: "💣 BOMBE - Sensor Bombe"
       description: Sensor indiquant l'état de la bombe (Inactive/Planted/Exploded/Defused)
+      default: []
       selector:
         entity:
           domain: sensor
@@ -277,7 +288,7 @@ action:
       - conditions:
           - condition: state
             entity_id: !input connection_sensor
-            state: "Connecté"
+            state: "on"
         sequence:
           # Sauvegarder l'état de chaque lampe dans une scene
           - service: scene.create
@@ -289,7 +300,7 @@ action:
       - conditions:
           - condition: state
             entity_id: !input connection_sensor
-            state: "Déconnecté"
+            state: "off"
         sequence:
           # Restaurer l'état des lampes
           - service: scene.turn_on
@@ -303,9 +314,11 @@ action:
       - conditions:
           - condition: state
             entity_id: !input connection_sensor
-            state: "Connecté"
+            state: "on"
           - condition: template
             value_template: "{{ enable_flash_effect }}"
+          - condition: template
+            value_template: "{{ flashed not in ['', 'unknown', 'unavailable', 'none'] }}"
           - condition: template
             value_template: >
               {% set flash_state = states(flashed) | string | lower %}
@@ -323,9 +336,11 @@ action:
       - conditions:
           - condition: state
             entity_id: !input connection_sensor
-            state: "Connecté"
+            state: "on"
           - condition: template
             value_template: "{{ enable_bomb_effect }}"
+          - condition: template
+            value_template: "{{ bomb not in ['', 'unknown', 'unavailable', 'none'] }}"
           - condition: state
             entity_id: !input bomb_sensor
             state: "Planted"
@@ -357,9 +372,11 @@ action:
       - conditions:
           - condition: state
             entity_id: !input connection_sensor
-            state: "Connecté"
+            state: "on"
           - condition: template
             value_template: "{{ enable_bomb_effect }}"
+          - condition: template
+            value_template: "{{ bomb not in ['', 'unknown', 'unavailable', 'none'] }}"
           - condition: state
             entity_id: !input bomb_sensor
             state: "Defused"
@@ -376,9 +393,11 @@ action:
       - conditions:
           - condition: state
             entity_id: !input connection_sensor
-            state: "Connecté"
+            state: "on"
           - condition: template
             value_template: "{{ enable_burning_effect }}"
+          - condition: template
+            value_template: "{{ burning not in ['', 'unknown', 'unavailable', 'none'] }}"
           - condition: template
             value_template: >
               {{ states(burning) | int(0) > 0 }}
@@ -423,13 +442,15 @@ action:
                 - delay:
                     milliseconds: 100
       
-      # PRIORITÉ 5 : Smoke (gris)
+      # PRIORITÉ 5 : Smoke (blanc progressif qui s'assombrit)
       - conditions:
           - condition: state
             entity_id: !input connection_sensor
-            state: "Connecté"
+            state: "on"
           - condition: template
             value_template: "{{ enable_smoke_effect }}"
+          - condition: template
+            value_template: "{{ smoked not in ['', 'unknown', 'unavailable', 'none'] }}"
           - condition: template
             value_template: >
               {{ states(smoked) | int(0) > 0 }}
@@ -439,7 +460,10 @@ action:
               entity_id: !input light_entities
             data:
               brightness_pct: >
-                {{ states(smoked) | int(0) }}
+                {% set smoke_level = states(smoked) | int(0) %}
+                {% set min_brightness = 10 %}
+                {% set max_brightness = 100 %}
+                {{ max_brightness - ((max_brightness - min_brightness) * smoke_level / 100) | int }}
               rgb_color: "{{ smoke_col }}"
               transition: 0.5
       
@@ -447,9 +471,13 @@ action:
       - conditions:
           - condition: state
             entity_id: !input connection_sensor
-            state: "Connecté"
+            state: "on"
           - condition: template
             value_template: "{{ enable_team }}"
+          - condition: template
+            value_template: "{{ team not in ['', 'unknown', 'unavailable', 'none'] }}"
+          - condition: template
+            value_template: "{{ round_phase_sensor not in ['', 'unknown', 'unavailable', 'none'] }}"
           - condition: template
             value_template: >
               {{ states(round_phase_sensor) in ['Live', 'Freezetime'] }}
