@@ -18,6 +18,7 @@ blueprint:
         light_entities:
           name: 💡 Lampes à contrôler
           description: Les lampes RGB qui réagiront aux événements CS2 (une ou plusieurs)
+          default: ""
           selector:
             entity:
               domain: light
@@ -26,6 +27,7 @@ blueprint:
         connection_sensor:
           name: 🔌 Sensor de connexion
           description: Sensor binaire indiquant l'état de connexion au jeu (on=Connecté, off=Déconnecté)
+          default: ""
           selector:
             entity:
               domain: binary_sensor
@@ -46,6 +48,7 @@ blueprint:
         current_team:
           name: "⚔️ ÉQUIPES - Sensor équipe actuelle"
           description: Sensor indiquant l'équipe actuelle (T ou CT)
+          default: ""
           selector:
             entity:
               domain: sensor
@@ -53,6 +56,7 @@ blueprint:
         round_phase:
           name: "⚔️ ÉQUIPES - Sensor phase de round"
           description: Sensor indiquant la phase du round (Over/Live/Freezetime)
+          default: ""
           selector:
             entity:
               domain: sensor
