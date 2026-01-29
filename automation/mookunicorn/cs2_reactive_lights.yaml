@@ -1,5 +1,5 @@
 # CS2 Lampe Réactive - Blueprint pour Home Assistant
-# Version: 2.1.0
+# Version: 2.1.1
 # Date: 2025-01-29
 # Description: Contrôle intelligent de lampes RGB basé sur les événements CS2
 #              avec sauvegarde/restauration automatique de l'état
