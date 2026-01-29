@@ -8,6 +8,7 @@ blueprint:
   name: CS2 Lampe Réactive
   description: Contrôle des lampes RGB en fonction des événements du jeu CS2 via CS2MQTT
   domain: automation
+  config_section:
   input:
     # ===== CONFIGURATION GÉNÉRALE =====
     general_section:
