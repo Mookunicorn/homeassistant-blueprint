@@ -1,12 +1,12 @@
 # CS2 Lampe Réactive - Blueprint pour Home Assistant
-# Version: 0.2.1
+# Version: 2.1.1
 # Date: 2025-01-29
 # Description: Contrôle intelligent de lampes RGB basé sur les événements CS2
-#              avec sauvegarde/restauration automatique de l'état
+#              Version de test sans sauvegarde d'état
 
 blueprint:
   name: CS2 Lampe Réactive
-  description: Contrôle des lampes RGB en fonction des événements du jeu CS2 via CS2MQTT avec sauvegarde/restauration automatique
+  description: Contrôle des lampes RGB en fonction des événements du jeu CS2 via CS2MQTT
   domain: automation
   input:
     # ===== CONFIGURATION GÉNÉRALE =====
@@ -17,13 +17,6 @@ blueprint:
         entity:
           domain: light
           multiple: true
-    
-    connection_sensor:
-      name: 🔌 Sensor de connexion
-      description: Sensor binaire indiquant l'état de connexion au jeu (on=Connecté, off=Déconnecté)
-      selector:
-        entity:
-          domain: binary_sensor
     
     # ===== CONFIGURATION ÉQUIPES =====
     enable_team_color:
@@ -225,7 +218,6 @@ max_exceeded: silent
 
 variables:
   lights: !input light_entities
-  connection: !input connection_sensor
   team: !input current_team
   flashed: !input flashed_sensor
   smoked: !input smoked_sensor
@@ -259,9 +251,6 @@ variables:
   enable_bomb_effect: !input enable_bomb
 
 trigger:
-  # Trigger de connexion/déconnexion
-  - platform: state
-    entity_id: !input connection_sensor
   # Triggers des événements de jeu
   - platform: state
     entity_id: !input current_team
@@ -278,37 +267,8 @@ trigger:
 
 action:
   - choose:
-      # ===== SAUVEGARDE DE L'ÉTAT (Connexion au jeu) =====
-      - conditions:
-          - condition: state
-            entity_id: !input connection_sensor
-            state: "on"
-        sequence:
-          # Sauvegarder l'état de chaque lampe dans une scene
-          - service: scene.create
-            data:
-              scene_id: cs2_lights_backup
-              snapshot_entities: !input light_entities
-      
-      # ===== RESTAURATION DE L'ÉTAT (Déconnexion du jeu) =====
-      - conditions:
-          - condition: state
-            entity_id: !input connection_sensor
-            state: "off"
-        sequence:
-          # Restaurer l'état des lampes
-          - service: scene.turn_on
-            target:
-              entity_id: scene.cs2_lights_backup
-            data:
-              transition: 2
-      
-      # ===== EFFETS DE JEU (seulement si connecté) =====
       # PRIORITÉ 1 : Flash (blanc)
       - conditions:
-          - condition: state
-            entity_id: !input connection_sensor
-            state: "on"
           - condition: template
             value_template: "{{ enable_flash_effect }}"
           - condition: template
@@ -326,9 +286,6 @@ action:
       
       # PRIORITÉ 2 : Bombe plantée (clignotement rouge)
       - conditions:
-          - condition: state
-            entity_id: !input connection_sensor
-            state: "on"
           - condition: template
             value_template: "{{ enable_bomb_effect }}"
           - condition: state
@@ -360,9 +317,6 @@ action:
       
       # PRIORITÉ 3 : Bombe diffusée (bleu fixe)
       - conditions:
-          - condition: state
-            entity_id: !input connection_sensor
-            state: "on"
           - condition: template
             value_template: "{{ enable_bomb_effect }}"
           - condition: state
@@ -379,9 +333,6 @@ action:
       
       # PRIORITÉ 4 : Burning (effet flamme)
       - conditions:
-          - condition: state
-            entity_id: !input connection_sensor
-            state: "on"
           - condition: template
             value_template: "{{ enable_burning_effect }}"
           - condition: template
@@ -430,9 +381,6 @@ action:
       
       # PRIORITÉ 5 : Smoke (blanc progressif qui s'assombrit)
       - conditions:
-          - condition: state
-            entity_id: !input connection_sensor
-            state: "on"
           - condition: template
             value_template: "{{ enable_smoke_effect }}"
           - condition: template
@@ -453,9 +401,6 @@ action:
       
       # PRIORITÉ 6 : Couleur d'équipe par défaut
       - conditions:
-          - condition: state
-            entity_id: !input connection_sensor
-            state: "on"
           - condition: template
             value_template: "{{ enable_team }}"
           - condition: template
