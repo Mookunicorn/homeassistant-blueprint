@@ -1,24 +1,32 @@
 # CS2 Lampe Réactive - Blueprint pour Home Assistant
 # Version: 2.1.3
-# Date: 2025-01-30
+# Date: 2025-01-29
 # Description: Contrôle intelligent de lampes RGB basé sur les événements CS2
+#              Version de test sans sauvegarde d'état
 
 blueprint:
   name: CS2 Lampe Réactive
   description: Contrôle des lampes RGB en fonction des événements du jeu CS2 via CS2MQTT
   domain: automation
+  # ===== CONFIGURATION GÉNÉRALE =====
+  general_section:
+  name: General
+  collapsed: true
   input:
-    # ===== CONFIGURATION GÉNÉRALE =====
     light_entities:
       name: 💡 Lampes à contrôler
       description: Les lampes RGB qui réagiront aux événements CS2 (une ou plusieurs)
-      default: []
+      default: ""
       selector:
         entity:
           domain: light
           multiple: true
-    
-    # ===== CONFIGURATION ÉQUIPES =====
+  
+  # ===== CONFIGURATION ÉQUIPES =====
+  team_section:
+  name: Team
+  collapsed: true
+  input:
     enable_team_color:
       name: "⚔️ ÉQUIPES - Activer les couleurs d'équipe"
       description: Active l'affichage de la couleur d'équipe pendant la manche
@@ -45,6 +53,7 @@ blueprint:
     color_t:
       name: "⚔️ ÉQUIPES - Couleur équipe T"
       description: Couleur pour l'équipe Terrorist
+      default: ""
       default: [255, 180, 0]
       selector:
         color_rgb:
@@ -75,8 +84,12 @@ blueprint:
           min: 1
           max: 100
           unit_of_measurement: "%"
-    
-    # ===== FLASH =====
+  
+  # ===== FLASH =====
+  flash_section:
+  name: Flash
+  collapsed: true
+  input:
     enable_flash:
       name: "⚡ FLASH - Activer l'effet Flash"
       description: Active l'effet blanc quand le joueur est flashé
@@ -108,8 +121,12 @@ blueprint:
           min: 1
           max: 100
           unit_of_measurement: "%"
-    
-    # ===== SMOKE =====
+  
+  # ===== SMOKE =====
+  smoke_section:
+  name: Smoke
+  collapsed: true
+  input:
     enable_smoke:
       name: "💨 SMOKE - Activer l'effet Smoke"
       description: Active l'effet blanc qui s'assombrit avec la fumée
@@ -133,6 +150,10 @@ blueprint:
         color_rgb:
     
     # ===== BURNING =====
+  burning_section:
+  name: Burning
+  collapsed: true
+  input:
     enable_burning:
       name: "🔥 BURNING - Activer l'effet Burning"
       description: Active l'effet de flamme quand le joueur brûle
@@ -169,7 +190,11 @@ blueprint:
       selector:
         color_rgb:
     
-    # ===== BOMBE =====
+  # ===== BOMBE =====
+  bomb_section:
+  name: Bomb
+  collapsed: true
+  input:
     enable_bomb:
       name: "💣 BOMBE - Activer les effets Bombe"
       description: Active les effets de bombe (clignotement rouge/bleu fixe)
