@@ -2,31 +2,22 @@
 # Version: 2.1.3
 # Date: 2025-01-30
 # Description: Contrôle intelligent de lampes RGB basé sur les événements CS2
-#              Version de test sans sauvegarde d'état
 
 blueprint:
   name: CS2 Lampe Réactive
   description: Contrôle des lampes RGB en fonction des événements du jeu CS2 via CS2MQTT
   domain: automation
-  # ===== CONFIGURATION GÉNÉRALE =====
-  general_section:
-  name: General
-  collapsed: true
   input:
+    # ===== CONFIGURATION GÉNÉRALE =====
     light_entities:
       name: 💡 Lampes à contrôler
       description: Les lampes RGB qui réagiront aux événements CS2 (une ou plusieurs)
-      default: ""
       selector:
         entity:
           domain: light
           multiple: true
-  
-  # ===== CONFIGURATION ÉQUIPES =====
-  team_section:
-  name: Team
-  collapsed: true
-  input:
+    
+    # ===== CONFIGURATION ÉQUIPES =====
     enable_team_color:
       name: "⚔️ ÉQUIPES - Activer les couleurs d'équipe"
       description: Active l'affichage de la couleur d'équipe pendant la manche
@@ -37,7 +28,6 @@ blueprint:
     current_team:
       name: "⚔️ ÉQUIPES - Sensor équipe actuelle"
       description: Sensor indiquant l'équipe actuelle (T ou CT)
-      default: ""
       selector:
         entity:
           domain: sensor
@@ -45,7 +35,6 @@ blueprint:
     round_phase:
       name: "⚔️ ÉQUIPES - Sensor phase de round"
       description: Sensor indiquant la phase du round (Over/Live/Freezetime)
-      default: ""
       selector:
         entity:
           domain: sensor
@@ -53,7 +42,6 @@ blueprint:
     color_t:
       name: "⚔️ ÉQUIPES - Couleur équipe T"
       description: Couleur pour l'équipe Terrorist
-      default: ""
       default: [255, 180, 0]
       selector:
         color_rgb:
@@ -84,12 +72,8 @@ blueprint:
           min: 1
           max: 100
           unit_of_measurement: "%"
-  
-  # ===== FLASH =====
-  flash_section:
-  name: Flash
-  collapsed: true
-  input:
+    
+    # ===== FLASH =====
     enable_flash:
       name: "⚡ FLASH - Activer l'effet Flash"
       description: Active l'effet blanc quand le joueur est flashé
@@ -100,7 +84,6 @@ blueprint:
     flashed_sensor:
       name: "⚡ FLASH - Sensor Flash"
       description: Sensor indiquant si le joueur est flashé (valeurs "True" ou "False" en texte)
-      default: ""
       selector:
         entity:
           domain: sensor
@@ -121,12 +104,8 @@ blueprint:
           min: 1
           max: 100
           unit_of_measurement: "%"
-  
-  # ===== SMOKE =====
-  smoke_section:
-  name: Smoke
-  collapsed: true
-  input:
+    
+    # ===== SMOKE =====
     enable_smoke:
       name: "💨 SMOKE - Activer l'effet Smoke"
       description: Active l'effet blanc qui s'assombrit avec la fumée
@@ -137,7 +116,6 @@ blueprint:
     smoked_sensor:
       name: "💨 SMOKE - Sensor Smoke"
       description: Sensor indiquant le niveau de smoke (0-100%)
-      default: ""
       selector:
         entity:
           domain: sensor
@@ -150,10 +128,6 @@ blueprint:
         color_rgb:
     
     # ===== BURNING =====
-  burning_section:
-  name: Burning
-  collapsed: true
-  input:
     enable_burning:
       name: "🔥 BURNING - Activer l'effet Burning"
       description: Active l'effet de flamme quand le joueur brûle
@@ -164,7 +138,6 @@ blueprint:
     burning_sensor:
       name: "🔥 BURNING - Sensor Burning"
       description: Sensor indiquant si le joueur brûle (0-100%)
-      default: ""
       selector:
         entity:
           domain: sensor
@@ -190,11 +163,7 @@ blueprint:
       selector:
         color_rgb:
     
-  # ===== BOMBE =====
-  bomb_section:
-  name: Bomb
-  collapsed: true
-  input:
+    # ===== BOMBE =====
     enable_bomb:
       name: "💣 BOMBE - Activer les effets Bombe"
       description: Active les effets de bombe (clignotement rouge/bleu fixe)
@@ -205,7 +174,6 @@ blueprint:
     bomb_sensor:
       name: "💣 BOMBE - Sensor Bombe"
       description: Sensor indiquant l'état de la bombe (Inactive/Planted/Exploded/Defused)
-      default: ""
       selector:
         entity:
           domain: sensor
